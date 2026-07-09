@@ -35,6 +35,12 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           cp index.html styles.css app.js app-enhancements.js manifest.webmanifest service-worker.js icon.svg config.example.js dist/
+          if [ -f .nojekyll ]; then
+            cp .nojekyll dist/.nojekyll
+          fi
+          if [ -f CNAME ]; then
+            cp CNAME dist/CNAME
+          fi
           if [ -d downloads ]; then
             cp -R downloads dist/downloads
           fi
@@ -47,16 +53,16 @@ jobs:
           APK_LINK="${APK_URL:-./downloads/linktalk-debug.apk}"
 
           if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ]; then
-            cat > dist/config.js <<EOF
-window.LINKTALK_CONFIG = {
-  supabaseUrl: "${SUPABASE_URL}",
-  supabaseAnonKey: "${SUPABASE_ANON_KEY}",
-  publicAppUrl: "${PUBLIC_URL}",
-  apkUrl: "${APK_LINK}"
-};
-
-window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;
-EOF
+            printf '%s\n' \
+              'window.LINKTALK_CONFIG = {' \
+              "  supabaseUrl: \"${SUPABASE_URL}\"," \
+              "  supabaseAnonKey: \"${SUPABASE_ANON_KEY}\"," \
+              "  publicAppUrl: \"${PUBLIC_URL}\"," \
+              "  apkUrl: \"${APK_LINK}\"" \
+              '};' \
+              '' \
+              'window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;' \
+              > dist/config.js
           else
             cp config.js dist/config.js
           fi
@@ -73,6 +79,8 @@ EOF
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
