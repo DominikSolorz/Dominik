@@ -12,6 +12,7 @@ const MAX_VOICE_SECONDS = 300;
 const state = {
   user: null,
   profile: null,
+  privateProfile: null,
   conversations: [],
   memberships: [],
   conversationMembers: [],
@@ -253,6 +254,7 @@ async function bootstrapUser() {
     await supabase.auth.signOut();
     return;
   }
+  await loadPrivateProfile();
   await loadConversations();
   await loadFriendships();
   setAdminVisibility();
@@ -262,6 +264,7 @@ async function bootstrapUser() {
 
 function clearData() {
   state.profile = null;
+  state.privateProfile = null;
   state.conversations = [];
   state.memberships = [];
   state.conversationMembers = [];
@@ -300,6 +303,29 @@ async function loadCurrentUser() {
   if (insertError) throw insertError;
   state.profile = data;
   state.profiles[data.id] = data;
+}
+
+async function loadPrivateProfile() {
+  if (!state.user) return;
+  const { data, error } = await supabase
+    .from("profile_private")
+    .select("*")
+    .eq("user_id", state.user.id)
+    .maybeSingle();
+  if (error) throw error;
+
+  if (data) {
+    state.privateProfile = data;
+    return;
+  }
+
+  const { data: created, error: insertError } = await supabase
+    .from("profile_private")
+    .insert({ user_id: state.user.id })
+    .select("*")
+    .single();
+  if (insertError) throw insertError;
+  state.privateProfile = created;
 }
 
 async function loadConversations() {
@@ -1263,6 +1289,7 @@ function openSettings() {
       <button class="list-button" id="editDisplayName"><i data-lucide="user-round"></i>Nazwa profilu</button>
       <button class="list-button" id="editUsername"><i data-lucide="at-sign"></i>Username</button>
       <button class="list-button" id="editStatus"><i data-lucide="message-square-text"></i>Status</button>
+      <button class="list-button" id="showPrivateData"><i data-lucide="id-card"></i>Dane osobowe</button>
       <button class="list-button" id="toggleReadReceipts"><i data-lucide="check-check"></i>Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
       <button class="list-button" id="toggleAutoTranscript"><i data-lucide="captions"></i>Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
       <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
@@ -1279,6 +1306,7 @@ function openSettings() {
   settingsLayout.querySelector("#editDisplayName").addEventListener("click", () => updateProfileText("display_name", "Nowa nazwa profilu").catch((error) => toast(error.message)));
   settingsLayout.querySelector("#editUsername").addEventListener("click", () => updateProfileText("username", "Nowy username").catch((error) => toast(error.message)));
   settingsLayout.querySelector("#editStatus").addEventListener("click", () => updateProfileText("status_text", "Nowy status").catch((error) => toast(error.message)));
+  settingsLayout.querySelector("#showPrivateData").addEventListener("click", showPrivateProfileSettings);
   settingsLayout.querySelector("#toggleReadReceipts").addEventListener("click", () => toggleProfileBoolean("read_receipts_enabled").catch((error) => toast(error.message)));
   settingsLayout.querySelector("#toggleAutoTranscript").addEventListener("click", () => toggleProfileBoolean("auto_transcribe_voice").catch((error) => toast(error.message)));
   settingsLayout.querySelector("#showPwaInstall").addEventListener("click", showPwaInstall);
@@ -1289,6 +1317,29 @@ function openSettings() {
   refreshIcons();
 }
 
+function showPrivateProfileSettings() {
+  const details = state.privateProfile || {};
+  settingsLayout.querySelector(".settings-content").innerHTML = `
+    <h3>Dane osobowe</h3>
+    <div class="settings-row"><span>Email</span><strong>${escapeHtml(state.user?.email || "Nie podano")}</strong></div>
+    <div class="settings-row"><span>Imie i nazwisko</span><strong>${formatPrivateValue(details.full_name)}</strong></div>
+    <div class="settings-row"><span>Telefon</span><strong>${formatPrivateValue(details.phone)}</strong></div>
+    <div class="settings-row"><span>Adres zamieszkania</span><strong>${formatPrivateValue(details.home_address)}</strong></div>
+    <div class="settings-row"><span>PESEL</span><strong class="sensitive-value">${escapeHtml(maskPesel(details.pesel))}</strong></div>
+    <div class="settings-list private-actions">
+      <button class="list-button" data-private-field="full_name"><i data-lucide="user-round"></i>Edytuj imie i nazwisko</button>
+      <button class="list-button" data-private-field="phone"><i data-lucide="phone"></i>Edytuj telefon</button>
+      <button class="list-button" data-private-field="home_address"><i data-lucide="map-pin"></i>Edytuj adres</button>
+      <button class="list-button" data-private-field="pesel"><i data-lucide="fingerprint"></i>Edytuj PESEL</button>
+    </div>
+    <p class="preview">Te dane nie sa uzywane jako publiczna nazwa w czacie.</p>
+  `;
+  settingsLayout.querySelectorAll("[data-private-field]").forEach((button) => {
+    button.addEventListener("click", () => updatePrivateProfileText(button.dataset.privateField).catch((error) => toast(error.message)));
+  });
+  refreshIcons();
+}
+
 async function updateProfileText(field, label) {
   const value = window.prompt(label, state.profile?.[field] || "");
   if (!value) return;
@@ -1296,6 +1347,58 @@ async function updateProfileText(field, label) {
   if (error) throw error;
   await loadCurrentUser();
   openSettings();
+}
+
+async function updatePrivateProfileText(field) {
+  if (!state.privateProfile) await loadPrivateProfile();
+  const labels = {
+    full_name: "Imie i nazwisko",
+    phone: "Numer telefonu",
+    home_address: "Adres zamieszkania",
+    pesel: "PESEL (11 cyfr)"
+  };
+  const value = window.prompt(labels[field] || "Wartosc", state.privateProfile?.[field] || "");
+  if (value === null) return;
+  const cleanValue = normalizePrivateField(field, value);
+  const patch = { [field]: cleanValue || null };
+  if (cleanValue && !state.privateProfile?.data_consent_at) {
+    patch.data_consent_at = new Date().toISOString();
+  }
+  const { data, error } = await supabase
+    .from("profile_private")
+    .update(patch)
+    .eq("user_id", state.user.id)
+    .select("*")
+    .single();
+  if (error) throw error;
+  state.privateProfile = data;
+  showPrivateProfileSettings();
+  toast("Zapisano dane.");
+}
+
+function normalizePrivateField(field, value) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  if (field === "pesel") {
+    const digits = trimmed.replace(/\D/g, "");
+    if (digits.length !== 11) throw new Error("PESEL musi miec 11 cyfr.");
+    return digits;
+  }
+  if (field === "phone") {
+    return trimmed.replace(/[^\d+()\s-]/g, "").slice(0, 40);
+  }
+  return trimmed.slice(0, 240);
+}
+
+function formatPrivateValue(value) {
+  return value ? escapeHtml(value) : "<span class=\"muted-value\">Nie podano</span>";
+}
+
+function maskPesel(value) {
+  if (!value) return "Nie podano";
+  const digits = String(value).replace(/\D/g, "");
+  if (digits.length <= 4) return "****";
+  return `*******${digits.slice(-4)}`;
 }
 
 async function toggleProfileBoolean(field) {
