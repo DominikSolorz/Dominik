@@ -978,6 +978,16 @@ h3 {
   color: #991b1b;
 }
 
+.auth-help-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.auth-help-actions .secondary-button {
+  width: 100%;
+}
+
 .setup-warning {
   margin-top: 16px;
   border: 1px solid #f1c40f;
