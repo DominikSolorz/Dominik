@@ -1,0 +1,21 @@
+# IDE
+.idea/
+*.iml
+.gradle/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# App
+dist/
+node_modules/
+config.js
+
+# Android
+android/local.properties
+android/.gradle/
+android/app/build/
+android/.idea/
+*.apk

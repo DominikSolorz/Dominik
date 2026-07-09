@@ -131,10 +131,13 @@ create table if not exists public.reports (
 );
 
 create index if not exists conversation_members_user_idx on public.conversation_members(user_id);
+create index if not exists conversation_members_conversation_idx on public.conversation_members(conversation_id);
 create index if not exists messages_conversation_created_idx on public.messages(conversation_id, created_at);
+create index if not exists messages_sender_idx on public.messages(sender_id);
 create index if not exists friendships_requester_idx on public.friendships(requester_id);
 create index if not exists friendships_addressee_idx on public.friendships(addressee_id);
 create index if not exists reports_status_idx on public.reports(status);
+create index if not exists reports_reported_user_idx on public.reports(reported_user_id);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
