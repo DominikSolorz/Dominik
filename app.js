@@ -51,6 +51,7 @@ const authScreen = document.getElementById("authScreen");
 const authForm = document.getElementById("authForm");
 const setupWarning = document.getElementById("setupWarning");
 const authStatus = document.getElementById("authStatus");
+const resendConfirmationButton = document.getElementById("resendConfirmationButton");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
 const messagesEl = document.getElementById("messages");
@@ -71,6 +72,7 @@ const settingsModal = document.getElementById("settingsModal");
 const settingsLayout = document.getElementById("settingsLayout");
 
 let pendingThemeId = "classic";
+let lastAuthEmail = "";
 
 function escapeHtml(value = "") {
   return String(value)
@@ -93,29 +95,42 @@ function showApp() {
   app.classList.remove("locked");
 }
 
-function setAuthStatus(message = "", type = "") {
+function setAuthStatus(message = "", type = "", showResend = false) {
   if (!authStatus) return;
   authStatus.textContent = message;
   authStatus.className = `auth-status ${type || ""}`.trim();
   authStatus.classList.toggle("hidden", !message);
+  resendConfirmationButton?.classList.toggle("hidden", !showResend);
 }
 
 function setAuthBusy(isBusy, message = "") {
   authForm.querySelectorAll("button, input").forEach((item) => {
     item.disabled = isBusy;
   });
+  if (resendConfirmationButton) resendConfirmationButton.disabled = isBusy;
   if (message) setAuthStatus(message);
 }
 
 function humanizeAuthError(error) {
   const message = String(error?.message || error || "Nieznany blad logowania.");
+  const status = error?.status || error?.statusCode;
+  const code = String(error?.code || error?.error_code || "");
   const lower = message.toLowerCase();
+  if (status === 429 || lower.includes("too many requests") || lower.includes("rate limit")) {
+    return "Supabase zablokowal kolejne proby rejestracji lub wysylki emaila limitem 429. Odczekaj kilka minut i sprobuj ponownie. Do prywatnych testow najlepiej w Supabase wylaczyc Confirm email.";
+  }
+  if (status >= 500 || lower.includes("database error querying schema") || code.includes("unexpected_failure")) {
+    return "Supabase Auth zwrocil blad serwera przy logowaniu. To nie jest blad hasla w aplikacji, tylko problem konfiguracji Auth/Supabase.";
+  }
   if (lower.includes("invalid login credentials")) return "Nieprawidlowy email albo haslo.";
   if (lower.includes("email not confirmed")) return "Konto nie jest jeszcze potwierdzone. Sprawdz poczte i kliknij link potwierdzajacy.";
   if (lower.includes("email_address_invalid") || lower.includes("email address")) return "Ten adres email zostal odrzucony. Uzyj prawdziwego adresu email, np. Gmail albo Outlook.";
   if (lower.includes("password")) return "Haslo musi miec minimum 6 znakow.";
-  if (lower.includes("rate limit")) return "Za duzo prob. Odczekaj chwile i sprobuj ponownie.";
   return message;
+}
+
+function authRedirectUrl() {
+  return `${window.location.origin}${window.location.pathname}`;
 }
 
 function isAdmin() {
@@ -452,10 +467,40 @@ async function login(email, password) {
 }
 
 async function register(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: authRedirectUrl()
+    }
+  });
   if (error) throw error;
   if (data.session) return "Konto utworzone i zalogowano. Laduje rozmowy...";
   return "Konto utworzone. Supabase wymaga potwierdzenia emaila, wiec sprawdz poczte i kliknij link potwierdzajacy.";
+}
+
+async function resendConfirmationEmail() {
+  const email = lastAuthEmail || document.getElementById("authEmail").value.trim();
+  if (!email) {
+    setAuthStatus("Wpisz email, zeby wyslac link potwierdzajacy.", "error");
+    return;
+  }
+  setAuthBusy(true, "Wysylam link potwierdzajacy...");
+  try {
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: authRedirectUrl()
+      }
+    });
+    if (error) throw error;
+    setAuthStatus("Wyslano link potwierdzajacy. Sprawdz poczte i folder spam.", "success", true);
+  } catch (error) {
+    setAuthStatus(humanizeAuthError(error), "error", true);
+  } finally {
+    setAuthBusy(false);
+  }
 }
 
 async function insertMessage(record) {
@@ -1407,9 +1452,10 @@ function bindUi() {
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!authForm.reportValidity()) return;
+    lastAuthEmail = document.getElementById("authEmail").value.trim();
     setAuthBusy(true, "Logowanie...");
     try {
-      await login(document.getElementById("authEmail").value, document.getElementById("authPassword").value);
+      await login(lastAuthEmail, document.getElementById("authPassword").value);
       setAuthStatus("Zalogowano. Laduje rozmowy...", "success");
     } catch (error) {
       setAuthStatus(humanizeAuthError(error), "error");
@@ -1420,16 +1466,19 @@ function bindUi() {
 
   document.getElementById("registerButton").addEventListener("click", async () => {
     if (!authForm.reportValidity()) return;
+    lastAuthEmail = document.getElementById("authEmail").value.trim();
     setAuthBusy(true, "Tworzenie konta...");
     try {
-      const message = await register(document.getElementById("authEmail").value, document.getElementById("authPassword").value);
-      setAuthStatus(message, "success");
+      const message = await register(lastAuthEmail, document.getElementById("authPassword").value);
+      setAuthStatus(message, "success", !message.includes("zalogowano"));
     } catch (error) {
       setAuthStatus(humanizeAuthError(error), "error");
     } finally {
       setAuthBusy(false);
     }
   });
+
+  resendConfirmationButton?.addEventListener("click", resendConfirmationEmail);
 
   composer.addEventListener("submit", async (event) => {
     event.preventDefault();
