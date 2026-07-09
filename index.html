@@ -76,6 +76,9 @@
         <p id="authIntro">
           Konta, rozmowy, pliki i wiadomosci synchronizuja sie na PC, Androidzie oraz iPhonie.
         </p>
+        <p>
+          <a class="download-link" href="downloads/bliskochat-debug.apk" download>Pobierz APK na Androida</a>
+        </p>
         <form class="auth-form" id="authForm">
           <label class="field">
             Email
@@ -90,6 +93,7 @@
             <button class="primary-button" type="submit">Zaloguj</button>
           </div>
         </form>
+        <div class="auth-status hidden" id="authStatus" role="status" aria-live="polite"></div>
         <div class="setup-warning hidden" id="setupWarning">
           Brakuje konfiguracji Supabase w pliku <strong>config.js</strong>.
           Uzupelnij `supabaseUrl` i `supabaseAnonKey`, potem uruchom ponownie.
