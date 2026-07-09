@@ -12,6 +12,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_VOICE_SECONDS = 300;
 const OFFLINE_CACHE_VERSION = 1;
 const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
+const MIN_APK_DOWNLOAD_BYTES = 250 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
 const ADMIN_CONTACT = {
@@ -634,7 +635,7 @@ function renderConnectionStatus() {
 
 function apkDownloadMarkup() {
   if (!apkUrl) {
-    return '<p class="field-note">Link do APK pojawi sie tutaj po zbudowaniu paczki Android i wgraniu jej na serwer.</p>';
+    return '<p class="field-note">Link do APK pojawi sie tutaj po pierwszym pelnym buildzie Android i publikacji strony.</p>';
   }
   return `<p><a class="download-link" href="${escapeHtml(apkUrl)}" download>Pobierz aplikacje mobilna</a></p>`;
 }
@@ -650,7 +651,9 @@ async function resolveApkDownloadAvailability(force = false) {
   apkDownloadChecked = true;
   try {
     const response = await fetch(apkUrl, { method: "HEAD", cache: "no-store" });
-    apkDownloadAvailable = response.ok;
+    const contentLength = Number.parseInt(response.headers.get("content-length") || "", 10);
+    const hasExpectedSize = Number.isFinite(contentLength) ? contentLength >= MIN_APK_DOWNLOAD_BYTES : true;
+    apkDownloadAvailable = response.ok && hasExpectedSize;
   } catch {
     apkDownloadAvailable = false;
   }
@@ -681,8 +684,8 @@ async function syncInlineApkDownload() {
       ? "Mozesz pobrac APK albo zainstalowac te strone bezposrednio z Chrome."
       : "APK jest gotowe do pobrania. Na telefonie mozesz tez przypiac strone do ekranu poczatkowego.")
     : (installReady
-      ? "Chrome moze zainstalowac te strone jako aplikacje. APK pojawi sie tutaj po kolejnym buildzie Android."
-      : "Link do APK pojawi sie tutaj po zbudowaniu paczki Android i wgraniu jej na serwer.");
+      ? "Chrome moze zainstalowac te strone jako aplikacje. Publiczny link do APK pojawi sie tutaj po kolejnym pelnym buildzie Android."
+      : "Link do APK pojawi sie tutaj po pierwszym pelnym buildzie Android i publikacji strony.");
   authDownloadHint.classList.remove("hidden");
 }
 

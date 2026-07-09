@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinkTalk APK</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #0b0f17;
+        color: #f8fafc;
+        padding: 24px;
+      }
+
+      main {
+        width: min(100%, 420px);
+        background: #111827;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 24px 60px rgba(2, 8, 23, 0.45);
+      }
+
+      .logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #0a66ff, #6d28d9);
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 32px;
+      }
+
+      p {
+        margin: 0 0 16px;
+        color: #cbd5e1;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: grid;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      a {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .primary {
+        background: #0a66ff;
+        color: #fff;
+      }
+
+      .secondary {
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        color: #e2e8f0;
+        background: rgba(15, 23, 42, 0.9);
+      }
+
+      .note {
+        margin-top: 16px;
+        font-size: 14px;
+        color: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="logo">L</div>
+      <h1>LinkTalk</h1>
+      <p>Pobierz aplikacje Android albo wroc do wersji przegladarkowej. Ten adres jest aktualizowany automatycznie po publikacji nowej wersji.</p>
+      <div class="actions">
+        <a class="primary" href="./linktalk-debug.apk" download>Pobierz APK Android</a>
+        <a class="secondary" href="../">Otworz aplikacje WWW</a>
+      </div>
+      <p class="note">Jesli telefon pyta o bezpieczenstwo instalacji, to normalne dla testowego APK poza Google Play.</p>
+    </main>
+  </body>
+</html>

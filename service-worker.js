@@ -1,4 +1,4 @@
-const CACHE_NAME = "linktalk-v3";
+const CACHE_NAME = "linktalk-v4";
 const APP_ASSETS = [
   "./",
   "./index.html",

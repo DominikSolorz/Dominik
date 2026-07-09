@@ -2,9 +2,6 @@ name: Deploy LinkTalk to OVH
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -43,6 +40,14 @@ jobs:
           set -euo pipefail
           APP_URL="${PUBLIC_APP_URL:-}"
           if [ -z "$APP_URL" ]; then
+            if [ -s CNAME ]; then
+              PUBLIC_DOMAIN="$(tr -d '\r\n' < CNAME)"
+              if [ -n "$PUBLIC_DOMAIN" ]; then
+                APP_URL="https://${PUBLIC_DOMAIN}/"
+              fi
+            fi
+          fi
+          if [ -z "$APP_URL" ]; then
             APP_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
           fi
           gradle -p android app:assembleDebug -PappUrl="$APP_URL"
@@ -56,7 +61,16 @@ jobs:
           APK_URL: ${{ vars.APK_URL }}
         run: |
           set -euo pipefail
-          PUBLIC_URL="${PUBLIC_APP_URL:-https://linktalk.pl/}"
+          PUBLIC_URL="${PUBLIC_APP_URL:-}"
+          if [ -z "$PUBLIC_URL" ] && [ -s CNAME ]; then
+            PUBLIC_DOMAIN="$(tr -d '\r\n' < CNAME)"
+            if [ -n "$PUBLIC_DOMAIN" ]; then
+              PUBLIC_URL="https://${PUBLIC_DOMAIN}/"
+            fi
+          fi
+          if [ -z "$PUBLIC_URL" ]; then
+            PUBLIC_URL="https://linktalk.pl/"
+          fi
           APK_LINK="${APK_URL:-./downloads/linktalk-debug.apk}"
           printf '%s\n' \
             'window.LINKTALK_CONFIG = {' \

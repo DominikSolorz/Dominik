@@ -8,6 +8,8 @@ To wdrozenie jest przygotowane pod Twoj VPS w OVH:
 - system: `Ubuntu 26.04`
 - docelowa domena: `linktalk.pl`
 
+Ten scenariusz jest traktowany jako dodatkowy wariant produkcyjny. Glowny publiczny tryb 24/7 jest obecnie oparty o GitHub Pages + Supabase, bo dziala bez recznego wlaczania serwera po kazdej zmianie.
+
 ## Aktualny stan
 
 - port `22/SSH` odpowiada z internetu
@@ -65,7 +67,7 @@ Workflow:
 .github/workflows/deploy-ovh.yml
 ```
 
-Po pushu do `main` workflow:
+Workflow OVH jest uruchamiany recznie, dopiero gdy VPS ma juz poprawny SSH, HTTP i HTTPS. Wtedy:
 
 1. buduje APK Android
 2. sklada release WWW

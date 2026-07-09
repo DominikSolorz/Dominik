@@ -32,6 +32,8 @@ Uzytkownik nie potrzebuje publicznego IP. Potrzebny jest publiczny adres strony,
 
 Po wrzuceniu tego katalogu do repozytorium GitHub na branch `main`, workflow `.github/workflows/pages.yml` publikuje statyczna aplikacje przez GitHub Pages. W ustawieniach repozytorium wybierz `Settings -> Pages -> Source: GitHub Actions`.
 
+To jest glowny tryb 24/7 dla produkcji: GitHub Pages trzyma stale wlaczona strone, Supabase trzyma dane i logowanie, a nowe zmiany wpadaja po samym pushu do `main`. Nie trzeba recznie podnosic hostingu po kazdej zmianie.
+
 Na PC uzytkownik otwiera ten link w Chrome/Edge. Na Androidzie otwiera link w Chrome i wybiera instalacje aplikacji. Na iPhonie otwiera link w Safari i dodaje do ekranu poczatkowego.
 
 ## Serwer danych
@@ -92,7 +94,16 @@ W obecnym interfejsie rejestracja dziala tak:
 
 ## GitHub Pages
 
-Workflow `.github/workflows/pages.yml` publikuje strone z katalogu `dist`. Jesli w repozytorium ustawisz zmienne `SUPABASE_URL` i `SUPABASE_ANON_KEY` w `Settings -> Secrets and variables -> Actions -> Variables`, workflow sam wygeneruje poprawny `config.js` dla publicznego linku.
+Workflow `.github/workflows/pages.yml` publikuje strone z katalogu `dist`. Przy kazdym pushu do `main`:
+
+- sklada statyczna wersje WWW,
+- probuje zbudowac swiezy APK Android,
+- publikuje jedna publiczna wersje strony i pliku APK,
+- wystawia `health.json` z czasem ostatniego builda.
+
+Jesli w repozytorium ustawisz zmienne `SUPABASE_URL` i `SUPABASE_ANON_KEY` w `Settings -> Secrets and variables -> Actions -> Variables`, workflow sam wygeneruje poprawny `config.js` dla publicznego linku.
+
+Jesli w repo jest plik `CNAME`, workflow traktuje te domene jako glowny adres produkcyjny.
 
 Po publikacji link bedzie mial ksztalt:
 
@@ -100,9 +111,17 @@ Po publikacji link bedzie mial ksztalt:
 https://TWOJ_LOGIN.github.io/NAZWA_REPO/
 ```
 
+Przy wlasnej domenie ustaw jednorazowo:
+
+- `Settings -> Pages -> Custom domain` = `linktalk.pl`
+- poprawne rekordy DNS domeny na GitHub Pages
+- po wystawieniu certyfikatu `Enforce HTTPS = ON`
+
+Jesli `https://linktalk.pl/` pokazuje zly certyfikat albo blad HTTPS, to problem lezy w konfiguracji GitHub Pages dla domeny, nie w samym kodzie aplikacji.
+
 ## Android APK
 
-Katalog `android/` zawiera prosta aplikacje Android WebView, ktora otwiera ten sam link GitHub Pages. Workflow `.github/workflows/android-apk.yml` buduje APK w chmurze GitHub Actions.
+Katalog `android/` zawiera prosta aplikacje Android WebView, ktora otwiera ten sam link GitHub Pages. Workflow `.github/workflows/android-apk.yml` zostawiamy do recznego uruchomienia, jesli chcesz osobno pobrac artifact APK z GitHub Actions. Standardowy publiczny link do APK aktualizuje workflow Pages.
 
 Publiczny link do pobrania testowego APK po wdrozeniu Pages:
 
