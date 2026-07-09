@@ -22,6 +22,17 @@ create table if not exists public.profiles (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.profile_private (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  full_name text,
+  phone text,
+  home_address text,
+  pesel text,
+  data_consent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.conversations (
   id uuid primary key default gen_random_uuid(),
   title text,
@@ -203,6 +214,11 @@ create trigger profiles_touch_updated_at
 before update on public.profiles
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists profile_private_touch_updated_at on public.profile_private;
+create trigger profile_private_touch_updated_at
+before update on public.profile_private
+for each row execute function public.touch_updated_at();
+
 drop trigger if exists conversations_touch_updated_at on public.conversations;
 create trigger conversations_touch_updated_at
 before update on public.conversations
@@ -219,6 +235,7 @@ before update on public.reports
 for each row execute function public.touch_updated_at();
 
 alter table public.profiles enable row level security;
+alter table public.profile_private enable row level security;
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
 alter table public.messages enable row level security;
@@ -237,6 +254,9 @@ grant execute on function public.can_read_message(uuid) to authenticated;
 grant select on public.profiles to authenticated;
 grant insert (id, display_name, username, avatar_url, status_text, is_online, read_receipts_enabled, auto_transcribe_voice) on public.profiles to authenticated;
 grant update (display_name, username, avatar_url, status_text, is_online, read_receipts_enabled, auto_transcribe_voice, updated_at) on public.profiles to authenticated;
+grant select on public.profile_private to authenticated;
+grant insert (user_id, full_name, phone, home_address, pesel, data_consent_at) on public.profile_private to authenticated;
+grant update (full_name, phone, home_address, pesel, data_consent_at, updated_at) on public.profile_private to authenticated;
 grant select, insert, update, delete on public.conversations to authenticated;
 grant select, insert, update, delete on public.conversation_members to authenticated;
 grant select, insert, update, delete on public.messages to authenticated;
@@ -320,6 +340,25 @@ on public.profiles for update
 to authenticated
 using ((select auth.uid()) = id and is_banned = false)
 with check ((select auth.uid()) = id and is_banned = false);
+
+drop policy if exists "profile_private_select_own_or_admin" on public.profile_private;
+create policy "profile_private_select_own_or_admin"
+on public.profile_private for select
+to authenticated
+using ((select auth.uid()) = user_id or (select public.is_admin()));
+
+drop policy if exists "profile_private_insert_own" on public.profile_private;
+create policy "profile_private_insert_own"
+on public.profile_private for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "profile_private_update_own_or_admin" on public.profile_private;
+create policy "profile_private_update_own_or_admin"
+on public.profile_private for update
+to authenticated
+using ((select auth.uid()) = user_id or (select public.is_admin()))
+with check ((select auth.uid()) = user_id or (select public.is_admin()));
 
 drop policy if exists "conversations_select_member" on public.conversations;
 create policy "conversations_select_member"
