@@ -29,6 +29,26 @@ jobs:
         with:
           enablement: true
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+
+      - name: Build public Android APK
+        working-directory: android
+        run: |
+          APP_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          gradle :app:assembleDebug -PappUrl="$APP_URL"
+
       - name: Prepare static app
         shell: bash
         env:
@@ -37,6 +57,30 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html styles.css app.js manifest.webmanifest service-worker.js icon.svg .nojekyll dist/
+          mkdir -p dist/downloads
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/downloads/bliskochat-debug.apk
+          cat > dist/downloads/index.html <<'HTML'
+          <!doctype html>
+          <html lang="pl">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Pobierz BliskoChat APK</title>
+              <style>
+                body{font-family:Arial,sans-serif;background:#f0f2f5;color:#050505;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px}
+                main{background:#fff;border-radius:8px;box-shadow:0 16px 36px rgba(0,0,0,.12);max-width:440px;padding:24px;text-align:center}
+                a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;background:#0866ff;color:#fff;text-decoration:none;font-weight:800;padding:0 18px}
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>BliskoChat APK</h1>
+                <p>Pobierz testowa aplikacje Android.</p>
+                <a href="./bliskochat-debug.apk" download>Pobierz APK</a>
+              </main>
+            </body>
+          </html>
+          HTML
           if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
             printf 'window.BLISKOCHAT_CONFIG = {\n  supabaseUrl: "%s",\n  supabaseAnonKey: "%s"\n};\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > dist/config.js
           else
