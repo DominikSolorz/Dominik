@@ -25,16 +25,22 @@
 
       <section class="inbox" aria-label="Lista rozmow">
         <header class="inbox-header">
-          <div>
-            <h1 id="sectionTitle">Czaty</h1>
+          <div class="inbox-title-stack">
+            <h1 id="sectionTitle">LinkTalk</h1>
+            <p class="section-subtitle" id="sectionSubtitle">Czaty</p>
           </div>
-          <button class="icon-button prominent" id="newChatButton" aria-label="Nowa wiadomosc" title="Nowa wiadomosc"><i data-lucide="square-pen"></i></button>
+          <div class="inbox-header-actions">
+            <button class="icon-button" id="inboxSettingsButton" aria-label="Menu" title="Menu"><i data-lucide="menu"></i></button>
+            <button class="icon-button prominent" id="newChatButton" aria-label="Nowa wiadomosc" title="Nowa wiadomosc"><i data-lucide="square-pen"></i></button>
+          </div>
         </header>
 
         <label class="search-box">
           <i data-lucide="search"></i>
-          <input id="searchInput" type="search" placeholder="Szukaj rozmow, osob, transkrypcji" />
+          <input id="searchInput" type="search" placeholder="Zapytaj LinkTalk AI lub wyszukaj" />
         </label>
+
+        <div class="story-strip" id="storyStrip" aria-label="Relacje"></div>
 
         <div class="filters" id="filters">
           <button class="chip active" data-filter="all">Wszystkie</button>
@@ -205,11 +211,15 @@
 
     <nav class="mobile-nav" aria-label="Nawigacja mobilna">
       <button class="mobile-tab active" data-view="chats"><i data-lucide="message-circle"></i><span>Czaty</span></button>
-      <button class="mobile-tab" data-view="contacts"><i data-lucide="users"></i><span>Kontakty</span></button>
-      <button class="mobile-tab" data-view="groups"><i data-lucide="messages-square"></i><span>Grupy</span></button>
-      <button class="mobile-tab" data-view="notifications"><i data-lucide="bell"></i><span>Powiad.</span></button>
-      <button class="mobile-tab" data-view="settings"><i data-lucide="settings"></i><span>Profil</span></button>
+      <button class="mobile-tab" data-view="contacts"><i data-lucide="users"></i><span>Relacje</span></button>
+      <button class="mobile-tab" data-view="notifications"><i data-lucide="bell"></i><span>Powiadomienia</span></button>
+      <button class="mobile-tab" data-view="settings"><i data-lucide="menu"></i><span>Menu</span></button>
     </nav>
+
+    <button class="mobile-ai-pill" id="openAiButton" type="button">
+      <span class="mobile-ai-orb" aria-hidden="true"></span>
+      <span>Zapytaj LinkTalk AI</span>
+    </button>
 
     <dialog class="modal" id="themeModal">
       <div class="modal-header">

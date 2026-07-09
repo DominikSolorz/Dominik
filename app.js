@@ -33,6 +33,7 @@ const state = {
   conversationMembers: [],
   profiles: {},
   messages: [],
+  lastMessagesByConversation: {},
   reactions: [],
   reads: [],
   friendships: [],
@@ -97,6 +98,11 @@ const messageInput = document.getElementById("messageInput");
 const composer = document.getElementById("composer");
 const searchInput = document.getElementById("searchInput");
 const sectionTitle = document.getElementById("sectionTitle");
+const sectionSubtitle = document.getElementById("sectionSubtitle");
+const storyStrip = document.getElementById("storyStrip");
+const filtersBar = document.getElementById("filters");
+const inboxSettingsButton = document.getElementById("inboxSettingsButton");
+const openAiButton = document.getElementById("openAiButton");
 const themeModal = document.getElementById("themeModal");
 const themeGrid = document.getElementById("themeGrid");
 const themePreview = document.getElementById("themePreview");
@@ -544,6 +550,7 @@ function queueMessageLocally(record) {
     created_at: now
   };
   state.queuedMessages = [...state.queuedMessages, queuedMessage];
+  state.lastMessagesByConversation[record.conversation_id] = queuedMessage;
   if (record.conversation_id === state.activeConversationId) {
     state.messages = [...state.messages, queuedMessage];
     cacheConversationState(record.conversation_id, state.messages, state.reactions, state.reads);
@@ -566,6 +573,7 @@ function removeQueuedMessage(localId, conversationId) {
     state.cachedMessagesByConversation[conversationId] = state.cachedMessagesByConversation[conversationId]
       .filter((message) => message.local_id !== localId);
   }
+  state.lastMessagesByConversation[conversationId] = getLatestConversationMessage(conversationId);
 }
 
 async function flushQueuedMessages() {
@@ -681,6 +689,7 @@ async function syncInlineApkDownload() {
 function showAuth() {
   authScreen.classList.remove("hidden");
   app.classList.add("locked");
+  document.body.classList.remove("app-active");
   setupWarning.classList.toggle("hidden", hasBackend);
   authForm.classList.toggle("hidden", !hasBackend);
   renderConnectionStatus();
@@ -689,6 +698,7 @@ function showAuth() {
 function showApp() {
   authScreen.classList.add("hidden");
   app.classList.remove("locked");
+  document.body.classList.add("app-active");
   renderConnectionStatus();
 }
 
@@ -974,6 +984,156 @@ function conversationSubtitle(conversation) {
   return other?.status_text || "Rozmowa prywatna";
 }
 
+function isMobileLayout() {
+  return window.innerWidth <= 760;
+}
+
+function formatConversationTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  const now = new Date();
+  const sameDay = date.toDateString() === now.toDateString();
+  if (sameDay) {
+    return new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit" }).format(date);
+  }
+  const diffDays = Math.floor((now - date) / 86400000);
+  if (diffDays < 7) {
+    return new Intl.DateTimeFormat("pl-PL", { weekday: "short" }).format(date).replace(".", "");
+  }
+  return new Intl.DateTimeFormat("pl-PL", { day: "2-digit", month: "short" }).format(date);
+}
+
+function avatarMarkup({ label = "?", imageUrl = "", online = false, className = "", statusClass = "" } = {}) {
+  const hasImage = Boolean(imageUrl);
+  const classes = ["avatar", className, hasImage ? "avatar-photo" : ""].filter(Boolean).join(" ");
+  return `
+    <span class="${classes}">
+      ${hasImage ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(label)}" />` : escapeHtml(initials(label))}
+      ${online ? `<span class="status-dot ${statusClass}"></span>` : ""}
+    </span>
+  `;
+}
+
+function getLatestConversationMessage(conversationId) {
+  const cached = [...(state.cachedMessagesByConversation[conversationId] || [])]
+    .sort((left, right) => new Date(right.created_at || 0) - new Date(left.created_at || 0))[0];
+  return state.lastMessagesByConversation[conversationId] || cached || null;
+}
+
+function messagePreviewLabel(message) {
+  if (!message) return "Rozpocznij rozmowe";
+  if (message.type === "voice") return message.transcript_text || "Wiadomosc glosowa";
+  if (message.type === "image") return message.body || "Wyslano zdjecie";
+  if (message.type === "video") return message.body || "Wyslano wideo";
+  if (message.type === "file") return message.attachment_name || "Wyslano plik";
+  if (message.type === "sticker") return "Naklejka";
+  if (message.type === "gif") return "GIF";
+  return message.body || "Nowa wiadomosc";
+}
+
+function conversationPreviewText(conversation) {
+  const message = getLatestConversationMessage(conversation.id);
+  if (!message) return conversationSubtitle(conversation);
+  const mine = message.sender_id === state.user?.id;
+  const prefix = mine ? "Ty: " : "";
+  return `${prefix}${messagePreviewLabel(message)}`;
+}
+
+function conversationUnread(conversation, member) {
+  const message = getLatestConversationMessage(conversation.id);
+  if (!member?.last_read_at) return Boolean(message && message.sender_id !== state.user?.id);
+  if (!message?.created_at) return false;
+  return new Date(message.created_at) > new Date(member.last_read_at);
+}
+
+function setInboxContext(title, subtitle = "", options = {}) {
+  const { showStories = false, showFilters = false } = options;
+  if (isMobileLayout() && title === "Czaty") {
+    sectionTitle.textContent = BRAND_NAME;
+    sectionSubtitle.textContent = "Czaty";
+  } else {
+    sectionTitle.textContent = title;
+    sectionSubtitle.textContent = subtitle || BRAND_NAME;
+  }
+  storyStrip?.classList.toggle("hidden", !showStories);
+  filtersBar?.classList.toggle("hidden", !showFilters);
+}
+
+function storyCandidates() {
+  const seen = new Set([state.user?.id]);
+  const profiles = [];
+
+  state.friendships
+    .filter((row) => row.status === "accepted")
+    .forEach((row) => {
+      const profileId = row.requester_id === state.user?.id ? row.addressee_id : row.requester_id;
+      if (!profileId || seen.has(profileId)) return;
+      const profile = state.profiles[profileId];
+      if (!profile) return;
+      seen.add(profileId);
+      profiles.push(profile);
+    });
+
+  state.conversations
+    .filter((conversation) => !conversation.is_group)
+    .forEach((conversation) => {
+      const profile = otherConversationProfile(conversation);
+      if (!profile?.id || seen.has(profile.id)) return;
+      seen.add(profile.id);
+      profiles.push(profile);
+    });
+
+  return profiles.slice(0, 10);
+}
+
+function renderStoryStrip() {
+  if (!storyStrip) return;
+  const cards = storyCandidates();
+  storyStrip.innerHTML = `
+    <button class="story-card story-create" type="button" id="storyCreateButton">
+      <span class="story-avatar story-avatar-create"><i data-lucide="plus"></i></span>
+      <span class="story-name">Nowa relacja</span>
+    </button>
+    ${cards.map((profile) => `
+      <button class="story-card" type="button" data-story-profile="${profile.id}">
+        ${avatarMarkup({
+          label: profile.display_name || profile.username || "Kontakt",
+          imageUrl: profile.avatar_url,
+          online: profile.is_online,
+          className: "story-avatar",
+          statusClass: "story-status"
+        })}
+        <span class="story-name">${escapeHtml((profile.display_name || profile.username || "Kontakt").split(" ")[0])}</span>
+      </button>
+    `).join("")}
+  `;
+  storyStrip.querySelector("#storyCreateButton")?.addEventListener("click", () => {
+    toast("Relacje i publikowanie notatek dopniemy w kolejnym etapie.");
+  });
+  storyStrip.querySelectorAll("[data-story-profile]").forEach((button) => {
+    button.addEventListener("click", () => openConversationForProfile(button.dataset.storyProfile).catch((error) => toast(error.message)));
+  });
+}
+
+async function openConversationForProfile(profileId) {
+  if (!profileId) return;
+  const existing = state.conversations.find((conversation) => (
+    !conversation.is_group && conversationMembers(conversation.id).some((member) => member.user_id === profileId)
+  ));
+  if (existing) {
+    state.activeConversationId = existing.id;
+    await loadMessages();
+    subscribeToRealtime();
+    app.classList.add("chat-open");
+    render();
+    return;
+  }
+  const username = state.profiles[profileId]?.username;
+  if (username) {
+    await startChatWithUsername(username);
+  }
+}
+
 function safeFileName(name) {
   return String(name || "plik").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 90);
 }
@@ -1082,6 +1242,7 @@ function clearData() {
   state.conversationMembers = [];
   state.profiles = {};
   state.messages = [];
+  state.lastMessagesByConversation = {};
   state.reactions = [];
   state.reads = [];
   state.friendships = [];
@@ -1276,6 +1437,7 @@ async function loadConversations() {
   state.conversations = conversations || [];
   sortConversationsInState();
   await loadConversationMembers(ids);
+  await loadConversationPreviews(ids);
   state.activeConversationId = state.activeConversationId || state.conversations[0]?.id || null;
   await loadMessages();
   subscribeToRealtime();
@@ -1309,6 +1471,28 @@ async function loadProfiles(profileIds) {
   });
 }
 
+async function loadConversationPreviews(ids) {
+  if (!ids.length) {
+    state.lastMessagesByConversation = {};
+    return;
+  }
+  if (state.isOffline) return;
+  const { data, error } = await supabase
+    .from("messages")
+    .select("id, conversation_id, sender_id, body, type, created_at, attachment_name, attachment_path, attachment_url, transcript_text")
+    .in("conversation_id", ids)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const latest = {};
+  (data || []).forEach((message) => {
+    if (!latest[message.conversation_id]) {
+      latest[message.conversation_id] = message;
+    }
+  });
+  state.lastMessagesByConversation = latest;
+}
+
 async function loadMessages() {
   if (!state.activeConversationId) {
     state.messages = [];
@@ -1331,6 +1515,7 @@ async function loadMessages() {
     throw error;
   }
   state.messages = data || [];
+  state.lastMessagesByConversation[state.activeConversationId] = state.messages.at(-1) || state.lastMessagesByConversation[state.activeConversationId] || null;
   await loadMessageMeta();
   cacheConversationState(state.activeConversationId);
   state.lastSyncAt = new Date().toISOString();
@@ -1695,8 +1880,9 @@ async function startChatWithUsername(username) {
 }
 
 function renderEmptyApp() {
-  sectionTitle.textContent = "Czaty";
+  setInboxContext("Czaty", "Rozmowy", { showStories: false, showFilters: false });
   conversationList.innerHTML = `<div class="details-card"><h3>Witaj w LinkTalk</h3><p>${state.isOffline ? "Brak internetu. Po pierwszym zalogowaniu na tym urzadzeniu aplikacja zapamieta ostatnie rozmowy offline." : "Zaloguj sie, aby zobaczyc rozmowy."}</p></div>`;
+  if (storyStrip) storyStrip.innerHTML = "";
   chatHeader.innerHTML = "";
   pinnedBanner.className = "pinned-banner";
   messagesEl.innerHTML = `<div class="details-card"><h3>Wybierz rozmowe</h3><p>${state.isOffline ? "Po zalogowaniu i pierwszej synchronizacji ostatnie wiadomosci beda dostepne takze bez sieci." : "Czaty pojawia sie tutaj po zalogowaniu."}</p></div>`;
@@ -1720,17 +1906,28 @@ function render() {
 }
 
 function renderConversationList() {
-  sectionTitle.textContent = "Czaty";
+  const filterTitles = {
+    all: "Czaty",
+    unread: "Nieprzeczytane",
+    groups: "Grupy",
+    requests: "Prosby",
+    archived: "Archiwum"
+  };
+  const title = filterTitles[state.activeFilter] || "Czaty";
+  const showStories = state.activeFilter === "all";
+  setInboxContext(title, showStories ? "Rozmowy i relacje" : BRAND_NAME, { showStories, showFilters: !isMobileLayout() });
+  if (showStories) renderStoryStrip();
+  else if (storyStrip) storyStrip.innerHTML = "";
   const query = searchInput.value.trim().toLowerCase();
   conversationList.innerHTML = "";
   const rows = state.conversations.filter((conversation) => {
     const member = state.memberships.find((item) => item.conversation_id === conversation.id);
     if (state.activeFilter === "groups" && !conversation.is_group) return false;
     if (state.activeFilter === "archived" && !member?.archived) return false;
-    if (state.activeFilter === "unread" && member?.last_read_at && new Date(conversation.updated_at) <= new Date(member.last_read_at)) return false;
+    if (state.activeFilter === "unread" && !conversationUnread(conversation, member)) return false;
     if (!["archived", "requests"].includes(state.activeFilter) && member?.archived) return false;
     if (!query) return true;
-    return conversationTitle(conversation).toLowerCase().includes(query);
+    return `${conversationTitle(conversation)} ${conversationPreviewText(conversation)}`.toLowerCase().includes(query);
   });
 
   if (!rows.length) {
@@ -1741,21 +1938,33 @@ function renderConversationList() {
   rows.forEach((conversation) => {
     const member = state.memberships.find((item) => item.conversation_id === conversation.id);
     const title = conversationTitle(conversation);
-    const subtitle = conversationSubtitle(conversation);
     const other = otherConversationProfile(conversation);
-    const onlineDot = other?.is_online ? "<span class='status-dot'></span>" : "";
-    const unread = member?.last_read_at && new Date(conversation.updated_at) > new Date(member.last_read_at);
+    const unread = conversationUnread(conversation, member);
     const queuedCount = state.queuedMessages.filter((message) => message.conversation_id === conversation.id).length;
+    const preview = conversationPreviewText(conversation);
+    const timeValue = getLatestConversationMessage(conversation.id)?.created_at || conversation.updated_at;
     const button = document.createElement("button");
-    button.className = `conversation-card ${conversation.id === state.activeConversationId ? "active" : ""}`;
+    button.className = `conversation-card ${conversation.id === state.activeConversationId ? "active" : ""} ${unread ? "unread" : ""}`.trim();
     button.type = "button";
     button.innerHTML = `
-      <span class="avatar">${escapeHtml(initials(title))}${onlineDot}</span>
+      ${avatarMarkup({
+        label: title,
+        imageUrl: other?.avatar_url,
+        online: other?.is_online,
+        className: "",
+        statusClass: unread ? "status-unread" : ""
+      })}
       <span>
-        <span class="conversation-title"><strong>${escapeHtml(title)}</strong>${member?.pinned ? "<span class='conversation-meta'>Przypiete</span>" : ""}</span>
-        <span class="preview">${escapeHtml(subtitle)}</span>
+        <span class="conversation-title">
+          <strong>${escapeHtml(title)}</strong>
+          ${member?.pinned ? "<span class='conversation-tag'>Przypiete</span>" : ""}
+        </span>
+        <span class="preview">${escapeHtml(preview)}</span>
       </span>
-      <span class="conversation-meta">${queuedCount ? `<span class='badge'>${queuedCount}</span>` : unread ? "<span class='badge'>1</span>" : formatTime(conversation.updated_at)}</span>
+      <span class="conversation-meta-stack">
+        <span class="conversation-meta">${formatConversationTime(timeValue)}</span>
+        ${queuedCount ? `<span class='badge'>${queuedCount}</span>` : unread ? "<span class='conversation-unread-dot'></span>" : ""}
+      </span>
     `;
     button.addEventListener("click", async () => {
       state.activeConversationId = conversation.id;
@@ -1777,11 +1986,14 @@ function renderHeader() {
   const title = conversationTitle(conversation);
   const subtitle = conversationSubtitle(conversation);
   const other = otherConversationProfile(conversation);
-  const onlineDot = other?.is_online ? "<span class='status-dot'></span>" : "";
   chatHeader.innerHTML = `
     <div class="chat-person">
       <button class="icon-button mobile-back" id="mobileBack" aria-label="Wroc"><i data-lucide="arrow-left"></i></button>
-      <span class="avatar">${escapeHtml(initials(title))}${onlineDot}</span>
+      ${avatarMarkup({
+        label: title,
+        imageUrl: other?.avatar_url,
+        online: other?.is_online
+      })}
       <span>
         <strong>${escapeHtml(title)}</strong>
         <span class="presence-line">${escapeHtml(subtitle)}</span>
@@ -1828,7 +2040,12 @@ function renderMessages() {
     const row = document.createElement("div");
     row.className = `message-row ${mine ? "mine" : ""}`;
     row.innerHTML = `
-      ${mine ? "" : `<span class="avatar message-avatar">${escapeHtml(initials(senderName))}</span>`}
+      ${mine ? "" : avatarMarkup({
+        label: senderName,
+        imageUrl: sender?.avatar_url,
+        online: sender?.is_online,
+        className: "message-avatar"
+      })}
       <div class="message ${message.local_status === "queued" ? "message-pending" : ""}">
         ${!mine && getActiveConversation()?.is_group ? `<div class="message-sender">${escapeHtml(senderName)}</div>` : ""}
         <div class="bubble ${message.type === "voice" ? "voice-bubble" : ""}">${messageBody(message)}</div>
@@ -1991,9 +2208,14 @@ function renderDetails() {
   const member = getActiveMembership();
   const title = conversationTitle(conversation);
   const subtitle = conversationSubtitle(conversation);
+  const other = otherConversationProfile(conversation);
   detailsPanel.innerHTML = `
     <div class="details-card profile-card">
-      <span class="avatar">${escapeHtml(initials(title))}</span>
+      ${avatarMarkup({
+        label: title,
+        imageUrl: other?.avatar_url,
+        online: other?.is_online
+      })}
       <h3>${escapeHtml(title)}</h3>
       <p class="preview">${escapeHtml(subtitle)}</p>
     </div>
@@ -2575,7 +2797,8 @@ function friendshipName(row) {
 
 async function renderContactsView() {
   await loadFriendships();
-  sectionTitle.textContent = "Kontakty";
+  setInboxContext("Relacje", "Znajomi i osoby blisko Ciebie", { showStories: true, showFilters: false });
+  renderStoryStrip();
   const accepted = state.friendships.filter((row) => row.status === "accepted");
   const incoming = state.friendships.filter((row) => row.status === "pending" && row.addressee_id === state.user.id);
   const outgoing = state.friendships.filter((row) => row.status === "pending" && row.requester_id === state.user.id);
@@ -2613,7 +2836,8 @@ async function renderContactsView() {
 
 async function renderNotificationsView() {
   await loadFriendships();
-  sectionTitle.textContent = "Powiadomienia";
+  setInboxContext("Powiadomienia", "Prosby i aktywnosc", { showStories: false, showFilters: false });
+  if (storyStrip) storyStrip.innerHTML = "";
   const incoming = state.friendships.filter((row) => row.status === "pending" && row.addressee_id === state.user.id);
   conversationList.innerHTML = `
     <div class="details-card">
@@ -2627,7 +2851,8 @@ async function renderNotificationsView() {
 }
 
 async function renderAdminView() {
-  sectionTitle.textContent = "Admin";
+  setInboxContext("Admin", "Moderacja i zgloszenia", { showStories: false, showFilters: false });
+  if (storyStrip) storyStrip.innerHTML = "";
   if (!isAdmin()) {
     conversationList.innerHTML = `<div class="details-card"><h3>Brak uprawnien</h3><p>Panel widza tylko moderatorzy i administratorzy.</p></div>`;
     return;
@@ -2664,6 +2889,8 @@ async function renderUtilityView(view) {
   if (view === "admin") return renderAdminView();
   if (view === "groups") {
     state.activeFilter = "groups";
+    setInboxContext("Grupy", "Rozmowy grupowe", { showStories: false, showFilters: !isMobileLayout() });
+    if (storyStrip) storyStrip.innerHTML = "";
     renderConversationList();
   }
 }
@@ -2744,6 +2971,13 @@ function bindUi() {
     if (state.activeView === "chats") renderConversationList();
   });
   document.getElementById("newChatButton").addEventListener("click", () => createConversation().catch((error) => toast(error.message)));
+  inboxSettingsButton?.addEventListener("click", () => openSettings());
+  openAiButton?.addEventListener("click", () => {
+    searchInput.focus();
+    if (isMobileLayout()) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
   document.getElementById("emojiButton").addEventListener("click", () => openPicker("emoji"));
   document.getElementById("stickerButton").addEventListener("click", () => openPicker("sticker"));
   document.getElementById("gifButton").addEventListener("click", () => openPicker("gif"));
@@ -2803,6 +3037,11 @@ function bindUi() {
     renderConnectionStatus();
     toast("Brak internetu. Ostatnie rozmowy zostaja na urzadzeniu, a nowe teksty zapiszemy offline.");
     render();
+  });
+  window.addEventListener("resize", () => {
+    if (!authScreen.classList.contains("hidden")) return;
+    if (state.activeView === "chats" || state.activeView === "groups") renderConversationList();
+    else renderUtilityView(state.activeView).catch(() => {});
   });
   refreshIcons();
 }
