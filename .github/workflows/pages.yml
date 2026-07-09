@@ -1,8 +1,9 @@
-name: Deploy BliskoChat PWA to GitHub Pages
+name: Deploy LinkTalk Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -11,87 +12,75 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: linktalk-pages
+  cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.10.2"
-
-      - name: Build public Android APK
-        working-directory: android
-        run: |
-          APP_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-          gradle :app:assembleDebug -PappUrl="$APP_URL"
-
-      - name: Prepare static app
+      - name: Prepare static site
         shell: bash
         env:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+          APK_URL: ${{ vars.APK_URL }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
         run: |
+          set -euo pipefail
           mkdir -p dist
-          cp index.html styles.css app.js manifest.webmanifest service-worker.js icon.svg .nojekyll dist/
-          mkdir -p dist/downloads
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/downloads/bliskochat-debug.apk
-          cat > dist/downloads/index.html <<'HTML'
-          <!doctype html>
-          <html lang="pl">
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>Pobierz BliskoChat APK</title>
-              <style>
-                body{font-family:Arial,sans-serif;background:#f0f2f5;color:#050505;display:grid;place-items:center;min-height:100vh;margin:0;padding:24px}
-                main{background:#fff;border-radius:8px;box-shadow:0 16px 36px rgba(0,0,0,.12);max-width:440px;padding:24px;text-align:center}
-                a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;background:#0866ff;color:#fff;text-decoration:none;font-weight:800;padding:0 18px}
-              </style>
-            </head>
-            <body>
-              <main>
-                <h1>BliskoChat APK</h1>
-                <p>Pobierz testowa aplikacje Android.</p>
-                <a href="./bliskochat-debug.apk" download>Pobierz APK</a>
-              </main>
-            </body>
-          </html>
-          HTML
-          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
-            printf 'window.BLISKOCHAT_CONFIG = {\n  supabaseUrl: "%s",\n  supabaseAnonKey: "%s"\n};\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > dist/config.js
+          cp index.html styles.css app.js app-enhancements.js manifest.webmanifest service-worker.js icon.svg config.example.js dist/
+          if [ -f .nojekyll ]; then
+            cp .nojekyll dist/.nojekyll
+          fi
+          if [ -f CNAME ]; then
+            cp CNAME dist/CNAME
+          fi
+          if [ -d downloads ]; then
+            cp -R downloads dist/downloads
+          fi
+
+          PUBLIC_URL="${PUBLIC_APP_URL:-}"
+          if [ -z "$PUBLIC_URL" ]; then
+            PUBLIC_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
+          fi
+
+          APK_LINK="${APK_URL:-./downloads/linktalk-debug.apk}"
+
+          if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ]; then
+            printf '%s\n' \
+              'window.LINKTALK_CONFIG = {' \
+              "  supabaseUrl: \"${SUPABASE_URL}\"," \
+              "  supabaseAnonKey: \"${SUPABASE_ANON_KEY}\"," \
+              "  publicAppUrl: \"${PUBLIC_URL}\"," \
+              "  apkUrl: \"${APK_LINK}\"" \
+              '};' \
+              '' \
+              'window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;' \
+              > dist/config.js
           else
             cp config.js dist/config.js
           fi
 
-      - name: Upload static app
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "dist"
+          path: dist
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
