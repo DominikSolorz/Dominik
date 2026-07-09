@@ -50,6 +50,7 @@ const app = document.getElementById("app");
 const authScreen = document.getElementById("authScreen");
 const authForm = document.getElementById("authForm");
 const setupWarning = document.getElementById("setupWarning");
+const authStatus = document.getElementById("authStatus");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
 const messagesEl = document.getElementById("messages");
@@ -90,6 +91,31 @@ function showAuth() {
 function showApp() {
   authScreen.classList.add("hidden");
   app.classList.remove("locked");
+}
+
+function setAuthStatus(message = "", type = "") {
+  if (!authStatus) return;
+  authStatus.textContent = message;
+  authStatus.className = `auth-status ${type || ""}`.trim();
+  authStatus.classList.toggle("hidden", !message);
+}
+
+function setAuthBusy(isBusy, message = "") {
+  authForm.querySelectorAll("button, input").forEach((item) => {
+    item.disabled = isBusy;
+  });
+  if (message) setAuthStatus(message);
+}
+
+function humanizeAuthError(error) {
+  const message = String(error?.message || error || "Nieznany blad logowania.");
+  const lower = message.toLowerCase();
+  if (lower.includes("invalid login credentials")) return "Nieprawidlowy email albo haslo.";
+  if (lower.includes("email not confirmed")) return "Konto nie jest jeszcze potwierdzone. Sprawdz poczte i kliknij link potwierdzajacy.";
+  if (lower.includes("email_address_invalid") || lower.includes("email address")) return "Ten adres email zostal odrzucony. Uzyj prawdziwego adresu email, np. Gmail albo Outlook.";
+  if (lower.includes("password")) return "Haslo musi miec minimum 6 znakow.";
+  if (lower.includes("rate limit")) return "Za duzo prob. Odczekaj chwile i sprobuj ponownie.";
+  return message;
 }
 
 function isAdmin() {
@@ -426,9 +452,10 @@ async function login(email, password) {
 }
 
 async function register(email, password) {
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
-  toast("Konto utworzone. Jesli Supabase wymaga potwierdzenia email, sprawdz poczte.");
+  if (data.session) return "Konto utworzone i zalogowano. Laduje rozmowy...";
+  return "Konto utworzone. Supabase wymaga potwierdzenia emaila, wiec sprawdz poczte i kliknij link potwierdzajacy.";
 }
 
 async function insertMessage(record) {
@@ -1235,11 +1262,12 @@ async function toggleProfileBoolean(field) {
 
 function showPwaInstall() {
   settingsLayout.querySelector(".settings-content").innerHTML = `
-    <h3>Instalacja PWA</h3>
-    <p>Android: otworz strone w Chrome i wybierz instalacje aplikacji.</p>
+    <h3>Instalacja</h3>
+    <p>Android: pobierz testowe APK albo otworz strone w Chrome i wybierz instalacje aplikacji.</p>
+    <p><a class="download-link" href="downloads/bliskochat-debug.apk" download>Pobierz APK na Androida</a></p>
     <p>iPhone: otworz w Safari, wybierz udostepnianie i dodaj do ekranu poczatkowego.</p>
-    <p>APK i TestFlight to kolejny etap po podpieciu narzedzi developerskich.</p>
   `;
+  refreshIcons();
 }
 
 async function sendFriendRequest() {
@@ -1378,18 +1406,28 @@ async function renderUtilityView(view) {
 function bindUi() {
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+    if (!authForm.reportValidity()) return;
+    setAuthBusy(true, "Logowanie...");
     try {
       await login(document.getElementById("authEmail").value, document.getElementById("authPassword").value);
+      setAuthStatus("Zalogowano. Laduje rozmowy...", "success");
     } catch (error) {
-      toast(error.message);
+      setAuthStatus(humanizeAuthError(error), "error");
+    } finally {
+      setAuthBusy(false);
     }
   });
 
   document.getElementById("registerButton").addEventListener("click", async () => {
+    if (!authForm.reportValidity()) return;
+    setAuthBusy(true, "Tworzenie konta...");
     try {
-      await register(document.getElementById("authEmail").value, document.getElementById("authPassword").value);
+      const message = await register(document.getElementById("authEmail").value, document.getElementById("authPassword").value);
+      setAuthStatus(message, "success");
     } catch (error) {
-      toast(error.message);
+      setAuthStatus(humanizeAuthError(error), "error");
+    } finally {
+      setAuthBusy(false);
     }
   });
 
