@@ -198,7 +198,7 @@ RESOLVED_DOMAIN_IP="$(getent ahostsv4 "$DOMAIN" | awk 'NR==1 {print $1}' || true
 RESOLVED_WWW_IP="$(getent ahostsv4 "$WWW_DOMAIN" | awk 'NR==1 {print $1}' || true)"
 
 if [[ "$RESOLVED_DOMAIN_IP" == "$PUBLIC_IPV4" && "$RESOLVED_WWW_IP" == "$PUBLIC_IPV4" ]]; then
-  sudo certbot certonly --webroot -w "$APP_ROOT" -d "$DOMAIN" -d "$WWW_DOMAIN" --agree-tos --register-unsafely-without-email --non-interactive || true
+  sudo certbot certonly --webroot -w "$APP_ROOT" -d "$DOMAIN" -d "$WWW_DOMAIN" --agree-tos --email "goldservicepoland@linktalk.pl" --non-interactive || true
 fi
 
 if [[ -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]]; then
