@@ -24,11 +24,13 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
 
       - name: Install Android packages
         shell: bash
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;34.0.0"
 
       - name: Build debug APK
         shell: bash
@@ -50,7 +52,7 @@ jobs:
           if [ -z "$APP_URL" ]; then
             APP_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
           fi
-          gradle -p android app:assembleDebug -PappUrl="$APP_URL"
+          gradle --no-daemon --stacktrace -p android app:assembleDebug -PappUrl="$APP_URL"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
