@@ -34,7 +34,7 @@ const state = {
 };
 
 const themes = [
-  { id: "classic", name: "Klasyczny", accent: "#0f766e", bg: "linear-gradient(135deg,#f6fbf9,#e9f5f2)" },
+  { id: "classic", name: "Klasyczny", accent: "#0084ff", bg: "#ffffff" },
   { id: "heart", name: "Serce", accent: "#db2777", bg: "linear-gradient(135deg,#fff1f7,#ffe4e6)" },
   { id: "ocean", name: "Spokojny ocean", accent: "#0369a1", bg: "linear-gradient(135deg,#e0f2fe,#ccfbf1)" },
   { id: "night", name: "Nocne niebo", accent: "#4f46e5", bg: "linear-gradient(135deg,#111827,#312e81)" },
@@ -163,6 +163,14 @@ function safeFileName(name) {
 
 function makeId() {
   return crypto?.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function refreshIcons() {
+  window.lucide?.createIcons({
+    attrs: {
+      "aria-hidden": "true"
+    }
+  });
 }
 
 async function init() {
@@ -473,7 +481,7 @@ async function createConversation() {
   const groupTitle = isGroup ? window.prompt("Nazwa grupy", found.map((user) => user.display_name).join(", ")) : null;
   const { data: conversation, error } = await supabase
     .from("conversations")
-    .insert({ owner_id: state.user.id, title: isGroup ? groupTitle || "Nowa grupa" : null, is_group: isGroup })
+    .insert({ owner_id: state.user.id, title: isGroup ? groupTitle || "Nowa grupa" : null, is_group: isGroup, quick_reaction: "Kciuk" })
     .select("*")
     .single();
   if (error) throw error;
@@ -515,7 +523,7 @@ async function startChatWithUsername(username) {
 
   const { data: conversation, error } = await supabase
     .from("conversations")
-    .insert({ owner_id: state.user.id, title: null, is_group: false })
+    .insert({ owner_id: state.user.id, title: null, is_group: false, quick_reaction: "Kciuk" })
     .select("*")
     .single();
   if (error) throw error;
@@ -542,11 +550,12 @@ async function startChatWithUsername(username) {
 
 function renderEmptyApp() {
   sectionTitle.textContent = "Czaty";
-  conversationList.innerHTML = `<div class="details-card"><h3>Brak danych</h3><p>Dane pojawia sie po polaczeniu z backendem i zalogowaniu.</p></div>`;
+  conversationList.innerHTML = `<div class="details-card"><h3>Witaj w BliskoChat</h3><p>Zaloguj sie, aby zobaczyc rozmowy.</p></div>`;
   chatHeader.innerHTML = "";
   pinnedBanner.className = "pinned-banner";
-  messagesEl.innerHTML = `<div class="details-card"><h3>Realna aplikacja</h3><p>Uzupelnij Supabase, uruchom SQL i zaloguj sie.</p></div>`;
+  messagesEl.innerHTML = `<div class="details-card"><h3>Wybierz rozmowe</h3><p>Czaty pojawia sie tutaj po zalogowaniu.</p></div>`;
   detailsPanel.innerHTML = "";
+  refreshIcons();
 }
 
 function render() {
@@ -558,6 +567,7 @@ function render() {
   renderPinned();
   renderMessages();
   renderDetails();
+  refreshIcons();
 }
 
 function renderConversationList() {
@@ -581,16 +591,21 @@ function renderConversationList() {
 
   rows.forEach((conversation) => {
     const member = state.memberships.find((item) => item.conversation_id === conversation.id);
+    const title = conversationTitle(conversation);
+    const subtitle = conversationSubtitle(conversation);
+    const other = otherConversationProfile(conversation);
+    const onlineDot = other?.is_online ? "<span class='status-dot'></span>" : "";
+    const unread = member?.last_read_at && new Date(conversation.updated_at) > new Date(member.last_read_at);
     const button = document.createElement("button");
     button.className = `conversation-card ${conversation.id === state.activeConversationId ? "active" : ""}`;
     button.type = "button";
     button.innerHTML = `
-      <span class="avatar">${escapeHtml(initials(conversationTitle(conversation)))}</span>
+      <span class="avatar">${escapeHtml(initials(title))}${onlineDot}</span>
       <span>
-        <span class="conversation-title"><strong>${escapeHtml(conversationTitle(conversation))}</strong>${member?.pinned ? "<span class='conversation-meta'>Przypiete</span>" : ""}</span>
-        <span class="preview">${escapeHtml(conversationSubtitle(conversation))}</span>
+        <span class="conversation-title"><strong>${escapeHtml(title)}</strong>${member?.pinned ? "<span class='conversation-meta'>Przypiete</span>" : ""}</span>
+        <span class="preview">${escapeHtml(subtitle)}</span>
       </span>
-      <span class="conversation-meta">${formatTime(conversation.updated_at)}</span>
+      <span class="conversation-meta">${unread ? "<span class='badge'>1</span>" : formatTime(conversation.updated_at)}</span>
     `;
     button.addEventListener("click", async () => {
       state.activeConversationId = conversation.id;
@@ -609,20 +624,28 @@ function renderHeader() {
     chatHeader.innerHTML = "";
     return;
   }
+  const title = conversationTitle(conversation);
+  const subtitle = conversationSubtitle(conversation);
+  const other = otherConversationProfile(conversation);
+  const onlineDot = other?.is_online ? "<span class='status-dot'></span>" : "";
   chatHeader.innerHTML = `
     <div class="chat-person">
-      <button class="icon-button mobile-back" id="mobileBack" aria-label="Wroc">W</button>
-      <span class="avatar">${escapeHtml(initials(conversationTitle(conversation)))}</span>
+      <button class="icon-button mobile-back" id="mobileBack" aria-label="Wroc"><i data-lucide="arrow-left"></i></button>
+      <span class="avatar">${escapeHtml(initials(title))}${onlineDot}</span>
       <span>
-        <strong>${escapeHtml(conversationTitle(conversation))}</strong>
-        <span class="preview">${escapeHtml(conversationSubtitle(conversation))}</span>
+        <strong>${escapeHtml(title)}</strong>
+        <span class="presence-line">${escapeHtml(subtitle)}</span>
       </span>
     </div>
     <div class="chat-actions">
-      <button class="icon-button" id="openChatSettings" aria-label="Informacje">I</button>
+      <button class="icon-button" id="audioCallButton" aria-label="Polaczenie audio" title="Polaczenie audio"><i data-lucide="phone"></i></button>
+      <button class="icon-button" id="videoCallButton" aria-label="Polaczenie wideo" title="Polaczenie wideo"><i data-lucide="video"></i></button>
+      <button class="icon-button" id="openChatSettings" aria-label="Informacje" title="Informacje"><i data-lucide="info"></i></button>
     </div>
   `;
   document.getElementById("mobileBack").addEventListener("click", () => app.classList.remove("chat-open"));
+  document.getElementById("audioCallButton").addEventListener("click", () => toast("Polaczenia audio wymagaja kolejnego etapu WebRTC."));
+  document.getElementById("videoCallButton").addEventListener("click", () => toast("Polaczenia wideo wymagaja kolejnego etapu WebRTC."));
   document.getElementById("openChatSettings").addEventListener("click", () => detailsPanel.scrollTo({ top: 0, behavior: "smooth" }));
 }
 
@@ -649,19 +672,23 @@ function renderMessages() {
     return;
   }
   state.messages.forEach((message) => {
-    const mine = message.sender_id === state.user.id;
+    const mine = message.sender_id === state.user?.id;
+    const sender = state.profiles[message.sender_id];
+    const senderName = sender?.display_name || sender?.username || "Uzytkownik";
     const row = document.createElement("div");
     row.className = `message-row ${mine ? "mine" : ""}`;
     row.innerHTML = `
+      ${mine ? "" : `<span class="avatar message-avatar">${escapeHtml(initials(senderName))}</span>`}
       <div class="message">
+        ${!mine && getActiveConversation()?.is_group ? `<div class="message-sender">${escapeHtml(senderName)}</div>` : ""}
         <div class="bubble ${message.type === "voice" ? "voice-bubble" : ""}">${messageBody(message)}</div>
         ${renderReactionPills(message.id)}
         <div class="message-meta">${formatTime(message.created_at)}${message.edited_at ? " - edytowano" : ""}${messageReadSummary(message)}</div>
         <div class="message-toolbar">
-          <button class="mini-action" data-copy="${message.id}">Kopiuj</button>
-          <button class="mini-action" data-react="${message.id}">Reakcja</button>
-          <button class="mini-action" data-pin-message="${message.id}">Przypnij</button>
-          <button class="mini-action" data-report-message="${message.id}">Zglos</button>
+          <button class="mini-action" data-copy="${message.id}" aria-label="Kopiuj" title="Kopiuj"><i data-lucide="copy"></i></button>
+          <button class="mini-action" data-react="${message.id}" aria-label="Reakcja" title="Reakcja"><i data-lucide="smile-plus"></i></button>
+          <button class="mini-action" data-pin-message="${message.id}" aria-label="Przypnij" title="Przypnij"><i data-lucide="pin"></i></button>
+          <button class="mini-action" data-report-message="${message.id}" aria-label="Zglos" title="Zglos"><i data-lucide="flag"></i></button>
         </div>
       </div>
     `;
@@ -700,7 +727,7 @@ function messageBody(message) {
   if (message.type === "voice") {
     return `
       <div class="voice-line">
-        <button class="mini-action" type="button" data-play-voice="${message.id}">Play</button>
+        <button class="mini-action" type="button" data-play-voice="${message.id}" aria-label="Odtworz" title="Odtworz"><i data-lucide="play"></i></button>
         <span class="progress"><span></span></span>
         <span>${message.voice_duration_seconds || 0}s</span>
       </div>
@@ -713,7 +740,7 @@ function messageBody(message) {
     return `
       <strong>${label}: ${escapeHtml(message.attachment_name || "plik")}</strong>
       <div class="attachment-meta">${formatBytes(message.attachment_size)}</div>
-      <button class="mini-action" type="button" data-download-file="${message.id}">Otworz</button>
+      <button class="mini-action" type="button" data-download-file="${message.id}"><i data-lucide="download"></i> Otworz</button>
       ${message.body ? `<div>${escapeHtml(message.body)}</div>` : ""}
     `;
   }
@@ -765,12 +792,13 @@ async function addReaction(messageId) {
   const { error } = await supabase.from("message_reactions").upsert({
     message_id: messageId,
     user_id: state.user.id,
-    reaction: conversation?.quick_reaction || "OK"
+    reaction: conversation?.quick_reaction || "Kciuk"
   }, { onConflict: "message_id,user_id,reaction" });
   if (error) toast(error.message);
   else {
     await loadMessageMeta();
     renderMessages();
+    refreshIcons();
   }
 }
 
@@ -806,35 +834,36 @@ function renderDetails() {
   }
   const media = state.messages.filter((message) => message.attachment_path || message.attachment_url);
   const member = getActiveMembership();
+  const title = conversationTitle(conversation);
+  const subtitle = conversationSubtitle(conversation);
   detailsPanel.innerHTML = `
-    <div class="details-card">
-      <div class="chat-person">
-        <span class="avatar">${escapeHtml(initials(conversationTitle(conversation)))}</span>
-        <span><strong>${escapeHtml(conversationTitle(conversation))}</strong><span class="preview">${escapeHtml(conversationSubtitle(conversation))}</span></span>
-      </div>
+    <div class="details-card profile-card">
+      <span class="avatar">${escapeHtml(initials(title))}</span>
+      <h3>${escapeHtml(title)}</h3>
+      <p class="preview">${escapeHtml(subtitle)}</p>
     </div>
     <div class="details-card">
       <h3>Dostosuj czat</h3>
       <div class="action-list">
-        <button class="list-button" id="openTheme">Zmien tapete i motyw</button>
-        <button class="list-button" id="openEmojiPicker">Zmien szybka reakcje</button>
-        <button class="list-button" id="togglePinConversation">${member?.pinned ? "Odepnij rozmowe" : "Przypnij rozmowe"}</button>
-        <button class="list-button" id="archiveConversation">Archiwizuj</button>
+        <button class="list-button" id="openTheme"><i data-lucide="palette"></i>Zmien tapete i motyw</button>
+        <button class="list-button" id="openEmojiPicker"><i data-lucide="thumbs-up"></i>Zmien szybka reakcje</button>
+        <button class="list-button" id="togglePinConversation"><i data-lucide="pin"></i>${member?.pinned ? "Odepnij rozmowe" : "Przypnij rozmowe"}</button>
+        <button class="list-button" id="archiveConversation"><i data-lucide="archive"></i>Archiwizuj</button>
       </div>
     </div>
     <div class="details-card">
       <h3>Media i pliki</h3>
       <div class="action-list">
-        ${media.length ? media.slice(-6).reverse().map((message) => `<button class="list-button" data-download-file="${message.id}">${escapeHtml(message.attachment_name || message.body || "Plik")}</button>`).join("") : "<p class='preview'>Brak plikow w tej rozmowie.</p>"}
+        ${media.length ? media.slice(-6).reverse().map((message) => `<button class="list-button" data-download-file="${message.id}"><i data-lucide="file"></i>${escapeHtml(message.attachment_name || message.body || "Plik")}</button>`).join("") : "<p class='preview'>Brak plikow w tej rozmowie.</p>"}
       </div>
     </div>
     <div class="details-card">
       <h3>Prywatnosc i bezpieczenstwo</h3>
       <div class="action-list">
-        <button class="list-button" id="setDisappearing">Znikajace wiadomosci</button>
-        <button class="list-button" id="muteConversation">Wycisz na 8 godzin</button>
-        <button class="list-button danger" id="blockConversation">Zablokuj osobe</button>
-        <button class="list-button danger" id="reportConversation">Zglos rozmowe</button>
+        <button class="list-button" id="setDisappearing"><i data-lucide="timer"></i>Znikajace wiadomosci</button>
+        <button class="list-button" id="muteConversation"><i data-lucide="bell-off"></i>Wycisz na 8 godzin</button>
+        <button class="list-button danger" id="blockConversation"><i data-lucide="ban"></i>Zablokuj osobe</button>
+        <button class="list-button danger" id="reportConversation"><i data-lucide="flag"></i>Zglos rozmowe</button>
       </div>
     </div>
   `;
@@ -981,7 +1010,7 @@ async function reportConversation() {
 
 function openPicker(mode) {
   const items = {
-    emoji: ["OK", "Serce", "Kciuk", "Usmiech", "Rakieta", "Kawa", "Brawo", "Tak"],
+    emoji: ["Kciuk", "Serce", "Usmiech", "OK", "Rakieta", "Kawa", "Brawo", "Tak"],
     sticker: ["Naklejka: super", "Naklejka: dziekuje", "Naklejka: tesknie", "Naklejka: dobranoc"],
     gif: ["GIF: radosc", "GIF: brawo", "GIF: zaskoczenie", "GIF: serce"]
   }[mode] || [];
@@ -1008,12 +1037,14 @@ function openPicker(mode) {
     pickerGrid.appendChild(button);
   });
   pickerModal.showModal();
+  refreshIcons();
 }
 
 function openVoiceModal() {
   document.getElementById("voiceStatus").textContent = "Gotowe do nagrania po przyznaniu uprawnienia mikrofonu.";
   document.getElementById("transcriptBox").textContent = state.voiceBlob ? "Nagranie gotowe do wyslania." : "Transkrypcja pojawi sie po wyslaniu audio.";
   voiceModal.showModal();
+  refreshIcons();
 }
 
 async function startVoiceRecording() {
@@ -1099,6 +1130,7 @@ async function requestTranscription(messageId, forcedLanguage) {
   document.getElementById("transcriptBox").textContent = data?.text || "Transkrypcja gotowa.";
   await loadMessages();
   renderMessages();
+  refreshIcons();
 }
 
 async function getSignedUrl(path) {
@@ -1156,13 +1188,13 @@ function openSettings() {
   document.getElementById("settingsTitle").textContent = "Ustawienia";
   settingsLayout.innerHTML = `
     <div class="settings-menu">
-      <button class="list-button" id="editDisplayName">Nazwa profilu</button>
-      <button class="list-button" id="editUsername">Username</button>
-      <button class="list-button" id="editStatus">Status</button>
-      <button class="list-button" id="toggleReadReceipts">Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
-      <button class="list-button" id="toggleAutoTranscript">Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
-      <button class="list-button" id="showPwaInstall">Instalacja Android/iPhone</button>
-      <button class="list-button" id="logoutButton">Wyloguj</button>
+      <button class="list-button" id="editDisplayName"><i data-lucide="user-round"></i>Nazwa profilu</button>
+      <button class="list-button" id="editUsername"><i data-lucide="at-sign"></i>Username</button>
+      <button class="list-button" id="editStatus"><i data-lucide="message-square-text"></i>Status</button>
+      <button class="list-button" id="toggleReadReceipts"><i data-lucide="check-check"></i>Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
+      <button class="list-button" id="toggleAutoTranscript"><i data-lucide="captions"></i>Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
+      <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
+      <button class="list-button" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
     </div>
     <div class="settings-content">
       <h3>${escapeHtml(state.profile?.display_name || "Profil")}</h3>
@@ -1182,6 +1214,7 @@ function openSettings() {
     await supabase.auth.signOut();
   });
   settingsModal.showModal();
+  refreshIcons();
 }
 
 async function updateProfileText(field, label) {
@@ -1418,8 +1451,10 @@ function bindUi() {
         renderUtilityView(button.dataset.view).catch((error) => toast(error.message));
       }
       app.classList.remove("chat-open");
+      refreshIcons();
     });
   });
+  refreshIcons();
 }
 
 function toast(text) {
