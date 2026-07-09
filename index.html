@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f766e" />
+    <title>BliskoChat</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="config.js"></script>
+  </head>
+  <body>
+    <div class="app-shell" id="app">
+      <aside class="rail" aria-label="Glowne menu">
+        <button class="rail-button active" data-view="chats" aria-label="Czaty" title="Czaty">C</button>
+        <button class="rail-button" data-view="contacts" aria-label="Kontakty" title="Kontakty">K</button>
+        <button class="rail-button" data-view="groups" aria-label="Grupy" title="Grupy">G</button>
+        <button class="rail-button" data-view="notifications" aria-label="Powiadomienia" title="Powiadomienia">P</button>
+        <button class="rail-button" data-view="admin" aria-label="Admin" title="Admin">A</button>
+        <button class="rail-button bottom" data-view="settings" aria-label="Ustawienia" title="Ustawienia">U</button>
+      </aside>
+
+      <section class="inbox" aria-label="Lista rozmow">
+        <header class="inbox-header">
+          <div>
+            <p class="eyebrow">BliskoChat</p>
+            <h1 id="sectionTitle">Czaty</h1>
+          </div>
+          <button class="icon-button" id="newChatButton" aria-label="Nowa wiadomosc" title="Nowa wiadomosc">+</button>
+        </header>
+
+        <label class="search-box">
+          <span>Szukaj</span>
+          <input id="searchInput" type="search" placeholder="Szukaj rozmow, osob, transkrypcji" />
+        </label>
+
+        <div class="filters" id="filters">
+          <button class="chip active" data-filter="all">Wszystkie</button>
+          <button class="chip" data-filter="unread">Nieprzeczytane</button>
+          <button class="chip" data-filter="groups">Grupy</button>
+          <button class="chip" data-filter="requests">Prosby</button>
+          <button class="chip" data-filter="archived">Archiwum</button>
+        </div>
+
+        <div class="conversation-list" id="conversationList"></div>
+      </section>
+
+      <main class="chat-panel" aria-label="Aktywny czat">
+        <header class="chat-header" id="chatHeader"></header>
+        <div class="pinned-banner" id="pinnedBanner"></div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+        <form class="composer" id="composer">
+          <div class="reply-preview hidden" id="replyPreview"></div>
+          <div class="composer-row">
+            <button type="button" class="icon-button" id="voiceButton" aria-label="Nagraj wiadomosc glosowa" title="Nagraj wiadomosc glosowa">M</button>
+            <button type="button" class="icon-button" id="attachButton" aria-label="Zalacz plik do 100 MB" title="Zalacz plik do 100 MB">Z</button>
+            <button type="button" class="icon-button" id="stickerButton" aria-label="Wybierz naklejke" title="Wybierz naklejke">N</button>
+            <button type="button" class="icon-button" id="gifButton" aria-label="Wybierz GIF" title="Wybierz GIF">GIF</button>
+            <input id="messageInput" type="text" autocomplete="off" placeholder="Napisz wiadomosc" />
+            <button type="button" class="icon-button" id="emojiButton" aria-label="Wybierz emoji" title="Wybierz emoji">E</button>
+            <button type="submit" class="send-button" id="sendButton">Wyslij</button>
+          </div>
+          <input id="fileInput" type="file" multiple hidden />
+        </form>
+      </main>
+
+      <aside class="details" id="detailsPanel" aria-label="Szczegoly rozmowy"></aside>
+    </div>
+
+    <section class="auth-screen" id="authScreen">
+      <div class="auth-card">
+        <p class="eyebrow">BliskoChat</p>
+        <h1>Prawdziwa aplikacja komunikatora</h1>
+        <p id="authIntro">
+          Polacz aplikacje z Supabase, zeby uzywac prawdziwych kont, rozmow,
+          wiadomosci, plikow i synchronizacji na PC, Androidzie oraz iPhonie.
+        </p>
+        <form class="auth-form" id="authForm">
+          <label class="field">
+            Email
+            <input id="authEmail" type="email" autocomplete="email" required />
+          </label>
+          <label class="field">
+            Haslo
+            <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" />
+          </label>
+          <div class="modal-actions">
+            <button class="secondary-button" id="registerButton" type="button">Rejestracja</button>
+            <button class="primary-button" type="submit">Logowanie</button>
+          </div>
+        </form>
+        <div class="setup-warning hidden" id="setupWarning">
+          Brakuje konfiguracji Supabase w pliku <strong>config.js</strong>.
+          Uzupelnij `supabaseUrl` i `supabaseAnonKey`, potem uruchom ponownie.
+        </div>
+      </div>
+    </section>
+
+    <nav class="mobile-nav" aria-label="Nawigacja mobilna">
+      <button class="mobile-tab active" data-view="chats">Czaty</button>
+      <button class="mobile-tab" data-view="contacts">Kontakty</button>
+      <button class="mobile-tab" data-view="groups">Grupy</button>
+      <button class="mobile-tab" data-view="notifications">Powiad.</button>
+      <button class="mobile-tab" data-view="settings">Profil</button>
+    </nav>
+
+    <dialog class="modal" id="themeModal">
+      <div class="modal-header">
+        <h2>Tapety i motywy</h2>
+        <button class="icon-button" data-close-modal aria-label="Zamknij">X</button>
+      </div>
+      <div class="theme-preview" id="themePreview"></div>
+      <div class="theme-grid" id="themeGrid"></div>
+      <div class="modal-actions">
+        <button class="secondary-button" id="resetThemeButton">Domyslny</button>
+        <button class="primary-button" id="applyThemeButton">Zastosuj</button>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="pickerModal">
+      <div class="modal-header">
+        <h2 id="pickerTitle">Wybierz</h2>
+        <button class="icon-button" data-close-modal aria-label="Zamknij">X</button>
+      </div>
+      <label class="search-box compact">
+        <span>Szukaj</span>
+        <input id="pickerSearch" type="search" placeholder="Szukaj" />
+      </label>
+      <div class="picker-grid" id="pickerGrid"></div>
+    </dialog>
+
+    <dialog class="modal" id="voiceModal">
+      <div class="modal-header">
+        <h2>Wiadomosc glosowa</h2>
+        <button class="icon-button" data-close-modal aria-label="Zamknij">X</button>
+      </div>
+      <div class="voice-recorder">
+        <div class="waveform" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p id="voiceStatus">Gotowe do nagrania po przyznaniu uprawnienia mikrofonu.</p>
+        <div class="voice-controls">
+          <button class="secondary-button" id="startVoiceButton" type="button">Start</button>
+          <button class="secondary-button" id="stopVoiceButton" type="button">Stop</button>
+          <button class="secondary-button" id="transcribeButton" type="button">Transkrybuj</button>
+          <button class="primary-button" id="sendVoiceButton" type="button">Wyslij audio</button>
+        </div>
+        <label class="field">
+          Jezyk transkrypcji
+          <select id="transcriptLanguage">
+            <option value="auto">Auto</option>
+            <option value="pl">Polski</option>
+            <option value="en">Angielski</option>
+            <option value="uk">Ukrainski</option>
+            <option value="de">Niemiecki</option>
+          </select>
+        </label>
+        <div class="transcript-box" id="transcriptBox">Transkrypcja pojawi sie tutaj.</div>
+      </div>
+    </dialog>
+
+    <dialog class="modal" id="settingsModal">
+      <div class="modal-header">
+        <h2 id="settingsTitle">Ustawienia</h2>
+        <button class="icon-button" data-close-modal aria-label="Zamknij">X</button>
+      </div>
+      <div class="settings-layout" id="settingsLayout"></div>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
