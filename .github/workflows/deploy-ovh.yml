@@ -58,16 +58,16 @@ jobs:
           set -euo pipefail
           PUBLIC_URL="${PUBLIC_APP_URL:-https://linktalk.pl/}"
           APK_LINK="${APK_URL:-./downloads/linktalk-debug.apk}"
-          cat > config.js <<EOF
-window.LINKTALK_CONFIG = {
-  supabaseUrl: "${SUPABASE_URL}",
-  supabaseAnonKey: "${SUPABASE_ANON_KEY}",
-  publicAppUrl: "${PUBLIC_URL}",
-  apkUrl: "${APK_LINK}"
-};
-
-window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;
-EOF
+          printf '%s\n' \
+            'window.LINKTALK_CONFIG = {' \
+            "  supabaseUrl: \"${SUPABASE_URL}\"," \
+            "  supabaseAnonKey: \"${SUPABASE_ANON_KEY}\"," \
+            "  publicAppUrl: \"${PUBLIC_URL}\"," \
+            "  apkUrl: \"${APK_LINK}\"" \
+            '};' \
+            '' \
+            'window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;' \
+            > config.js
 
       - name: Build OVH package
         shell: pwsh
