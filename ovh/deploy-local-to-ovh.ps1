@@ -1,5 +1,5 @@
 param(
-  [string]$Host = "146.59.93.168",
+  [string]$SshHost = "146.59.93.168",
   [string]$User = "root",
   [int]$Port = 22,
   [string]$KeyPath = "$HOME\\.ssh\\id_ed25519"
@@ -25,8 +25,8 @@ if (-not (Get-Command ssh -ErrorAction SilentlyContinue)) {
 
 powershell -ExecutionPolicy Bypass -File $packageScript
 
-& scp -i $KeyPath -P $Port $bootstrapScript "${User}@${Host}:/tmp/bootstrap-vps.sh"
-& scp -i $KeyPath -P $Port $releaseZip "${User}@${Host}:/tmp/linktalk-ovh-site.zip"
-& ssh -i $KeyPath -p $Port "${User}@${Host}" "chmod +x /tmp/bootstrap-vps.sh && DOMAIN=linktalk.pl WWW_DOMAIN=www.linktalk.pl PUBLIC_IPV4=$Host /tmp/bootstrap-vps.sh /tmp/linktalk-ovh-site.zip"
+& scp -i $KeyPath -P $Port $bootstrapScript "${User}@${SshHost}:/tmp/bootstrap-vps.sh"
+& scp -i $KeyPath -P $Port $releaseZip "${User}@${SshHost}:/tmp/linktalk-ovh-site.zip"
+& ssh -i $KeyPath -p $Port "${User}@${SshHost}" "chmod +x /tmp/bootstrap-vps.sh && DOMAIN=linktalk.pl WWW_DOMAIN=www.linktalk.pl PUBLIC_IPV4=$SshHost /tmp/bootstrap-vps.sh /tmp/linktalk-ovh-site.zip"
 
-Write-Host "Wdrozenie na OVH zakonczone. Sprawdz: https://linktalk.pl/ albo http://$Host/"
+Write-Host "Wdrozenie na OVH zakonczone. Sprawdz: https://linktalk.pl/ albo http://$SshHost/"
