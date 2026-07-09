@@ -1,8 +1,9 @@
-name: Build BliskoChat Android APK
+name: Build LinkTalk Android APK
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -26,17 +27,29 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.10.2"
+
+      - name: Install Android packages
+        shell: bash
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Build debug APK
-        working-directory: android
+        shell: bash
+        env:
+          PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
         run: |
-          APP_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
-          gradle :app:assembleDebug -PappUrl="$APP_URL"
+          set -euo pipefail
+          APP_URL="${PUBLIC_APP_URL:-}"
+          if [ -z "$APP_URL" ]; then
+            APP_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
+          fi
+          gradle -p android app:assembleDebug -PappUrl="$APP_URL"
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bliskochat-debug-apk
+          name: linktalk-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

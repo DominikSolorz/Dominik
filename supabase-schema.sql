@@ -1,4 +1,4 @@
--- BliskoChat production schema for Supabase.
+-- LinkTalk production schema for Supabase.
 -- Run this in the Supabase SQL editor, then set config.js with your project URL and public key.
 -- First admin: after the first account exists, set it manually in SQL:
 -- update public.profiles set role = 'admin' where username = 'your-username';
@@ -29,6 +29,15 @@ create table if not exists public.profile_private (
   home_address text,
   pesel text,
   data_consent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.profile_private_vault (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  encrypted_payload text not null,
+  key_version text not null default 'v1',
+  masked_pesel text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -219,6 +228,11 @@ create trigger profile_private_touch_updated_at
 before update on public.profile_private
 for each row execute function public.touch_updated_at();
 
+drop trigger if exists profile_private_vault_touch_updated_at on public.profile_private_vault;
+create trigger profile_private_vault_touch_updated_at
+before update on public.profile_private_vault
+for each row execute function public.touch_updated_at();
+
 drop trigger if exists conversations_touch_updated_at on public.conversations;
 create trigger conversations_touch_updated_at
 before update on public.conversations
@@ -236,6 +250,7 @@ for each row execute function public.touch_updated_at();
 
 alter table public.profiles enable row level security;
 alter table public.profile_private enable row level security;
+alter table public.profile_private_vault enable row level security;
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
 alter table public.messages enable row level security;
@@ -257,6 +272,7 @@ grant update (display_name, username, avatar_url, status_text, is_online, read_r
 grant select on public.profile_private to authenticated;
 grant insert (user_id, full_name, phone, home_address, pesel, data_consent_at) on public.profile_private to authenticated;
 grant update (full_name, phone, home_address, pesel, data_consent_at, updated_at) on public.profile_private to authenticated;
+revoke all on public.profile_private_vault from public, anon, authenticated;
 grant select, insert, update, delete on public.conversations to authenticated;
 grant select, insert, update, delete on public.conversation_members to authenticated;
 grant select, insert, update, delete on public.messages to authenticated;

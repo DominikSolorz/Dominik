@@ -1,0 +1,106 @@
+name: Deploy LinkTalk to OVH
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Android packages
+        shell: bash
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Build debug APK
+        shell: bash
+        env:
+          PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          APP_URL="${PUBLIC_APP_URL:-}"
+          if [ -z "$APP_URL" ]; then
+            APP_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
+          fi
+          gradle -p android app:assembleDebug -PappUrl="$APP_URL"
+
+      - name: Generate production config
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          PUBLIC_APP_URL: ${{ vars.PUBLIC_APP_URL }}
+          APK_URL: ${{ vars.APK_URL }}
+        run: |
+          set -euo pipefail
+          PUBLIC_URL="${PUBLIC_APP_URL:-https://linktalk.pl/}"
+          APK_LINK="${APK_URL:-./downloads/linktalk-debug.apk}"
+          cat > config.js <<EOF
+window.LINKTALK_CONFIG = {
+  supabaseUrl: "${SUPABASE_URL}",
+  supabaseAnonKey: "${SUPABASE_ANON_KEY}",
+  publicAppUrl: "${PUBLIC_URL}",
+  apkUrl: "${APK_LINK}"
+};
+
+window.BLISKOCHAT_CONFIG = window.LINKTALK_CONFIG;
+EOF
+
+      - name: Build OVH package
+        shell: pwsh
+        run: ./ovh/make-ovh-package.ps1
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          OVH_SSH_PRIVATE_KEY: ${{ secrets.OVH_SSH_PRIVATE_KEY }}
+          OVH_SSH_HOST: ${{ secrets.OVH_SSH_HOST }}
+          OVH_SSH_PORT: ${{ secrets.OVH_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$OVH_SSH_PRIVATE_KEY" > ~/.ssh/ovh_key
+          chmod 600 ~/.ssh/ovh_key
+          ssh-keyscan -p "${OVH_SSH_PORT:-22}" "$OVH_SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: Upload and activate release
+        shell: bash
+        env:
+          OVH_SSH_HOST: ${{ secrets.OVH_SSH_HOST }}
+          OVH_SSH_PORT: ${{ secrets.OVH_SSH_PORT }}
+          OVH_SSH_USER: ${{ secrets.OVH_SSH_USER }}
+          OVH_PUBLIC_IPV4: ${{ vars.OVH_PUBLIC_IPV4 }}
+          OVH_DOMAIN: ${{ vars.OVH_DOMAIN }}
+          OVH_WWW_DOMAIN: ${{ vars.OVH_WWW_DOMAIN }}
+        run: |
+          set -euo pipefail
+          SSH_PORT="${OVH_SSH_PORT:-22}"
+          PUBLIC_IPV4="${OVH_PUBLIC_IPV4:-$OVH_SSH_HOST}"
+          DOMAIN="${OVH_DOMAIN:-linktalk.pl}"
+          WWW_DOMAIN="${OVH_WWW_DOMAIN:-www.linktalk.pl}"
+          scp -i ~/.ssh/ovh_key -P "$SSH_PORT" ovh/bootstrap-vps.sh "${OVH_SSH_USER}@${OVH_SSH_HOST}:/tmp/bootstrap-vps.sh"
+          scp -i ~/.ssh/ovh_key -P "$SSH_PORT" ovh/release/linktalk-ovh-site.zip "${OVH_SSH_USER}@${OVH_SSH_HOST}:/tmp/linktalk-ovh-site.zip"
+          ssh -i ~/.ssh/ovh_key -p "$SSH_PORT" "${OVH_SSH_USER}@${OVH_SSH_HOST}" "chmod +x /tmp/bootstrap-vps.sh && DOMAIN=${DOMAIN} WWW_DOMAIN=${WWW_DOMAIN} PUBLIC_IPV4=${PUBLIC_IPV4} /tmp/bootstrap-vps.sh /tmp/linktalk-ovh-site.zip"

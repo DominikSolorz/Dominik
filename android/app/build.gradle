@@ -3,18 +3,22 @@ plugins {
 }
 
 def appUrl = providers.gradleProperty("appUrl").orElse("https://example.com/").get()
+def usesCleartextTraffic = appUrl.toLowerCase().startsWith("http://") ? "true" : "false"
 
 android {
-    namespace "pl.bliskochat.app"
+    namespace "pl.linktalk.app"
     compileSdk 35
 
     defaultConfig {
-        applicationId "pl.bliskochat.app"
+        applicationId "pl.linktalk.app"
         minSdk 23
         targetSdk 35
         versionCode 1
         versionName "1.0.0"
         buildConfigField "String", "APP_URL", "\"${appUrl}\""
+        manifestPlaceholders = [
+            usesCleartextTraffic: usesCleartextTraffic
+        ]
     }
 
     buildFeatures {
