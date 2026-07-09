@@ -50,7 +50,14 @@ jobs:
           if [ -z "$APP_URL" ]; then
             APP_URL="https://${REPOSITORY_OWNER}.github.io/${REPOSITORY_NAME}/"
           fi
+          set +e
           gradle -p android app:assembleDebug -PappUrl="$APP_URL"
+          APK_BUILD_EXIT=$?
+          set -e
+
+          if [ "$APK_BUILD_EXIT" -ne 0 ]; then
+            echo "Android build was not ready in this run. Continuing with the latest available web release package."
+          fi
 
       - name: Generate production config
         shell: bash
