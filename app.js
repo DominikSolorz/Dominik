@@ -18,7 +18,7 @@ const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
   phone: "795-731-886",
-  email: "goldservicepoland@gmail.com",
+  email: "goldservicepoland@linktalk.pl",
   eDelivery: "AE:PL-90075-94799-GARAS-26",
   epuap: "DominikSolorz436"
 };
@@ -313,6 +313,48 @@ async function updateCurrentUserMetadata(patch = {}) {
   if (error) throw error;
   if (data?.user) state.user = data.user;
   return state.user;
+}
+
+async function syncLegalAcceptances() {
+  if (!state.user) return;
+  const metadata = currentUserMetadata();
+  const version = String(metadata.legal_version || LEGAL_VERSION);
+  const rows = [];
+
+  if (metadata.terms_accepted_at) {
+    rows.push({
+      user_id: state.user.id,
+      document_type: "terms",
+      version,
+      accepted_at: metadata.terms_accepted_at,
+      source: "auth_metadata"
+    });
+  }
+
+  if (metadata.privacy_accepted_at) {
+    rows.push({
+      user_id: state.user.id,
+      document_type: "privacy",
+      version,
+      accepted_at: metadata.privacy_accepted_at,
+      source: "auth_metadata"
+    });
+  }
+
+  if (!rows.length) return;
+
+  const { error } = await supabase
+    .from("legal_acceptances")
+    .upsert(rows, { onConflict: "user_id,document_type,version" });
+
+  if (error) {
+    const message = String(error.message || "");
+    if (message.includes("relation") && message.includes("legal_acceptances")) {
+      console.warn("Tabela legal_acceptances nie jest jeszcze wdrozona w Supabase.");
+      return;
+    }
+    throw error;
+  }
 }
 
 function isStandaloneApp() {
@@ -1013,6 +1055,7 @@ async function bootstrapUserWithOfflineSupport() {
 async function bootstrapUser() {
   await loadCurrentUser();
   await syncProfileFromAuthMetadata();
+  await syncLegalAcceptances();
   if (state.profile?.is_banned) {
     showAuth();
     renderEmptyApp();

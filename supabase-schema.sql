@@ -42,6 +42,16 @@ create table if not exists public.profile_private_vault (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.legal_acceptances (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  document_type text not null check (document_type in ('terms', 'privacy')),
+  version text not null,
+  accepted_at timestamptz not null default now(),
+  source text not null default 'app',
+  created_at timestamptz not null default now(),
+  primary key (user_id, document_type, version)
+);
+
 create table if not exists public.conversations (
   id uuid primary key default gen_random_uuid(),
   title text,
@@ -140,13 +150,10 @@ create table if not exists public.reports (
 );
 
 create index if not exists conversation_members_user_idx on public.conversation_members(user_id);
-create index if not exists conversation_members_conversation_idx on public.conversation_members(conversation_id);
 create index if not exists messages_conversation_created_idx on public.messages(conversation_id, created_at);
-create index if not exists messages_sender_idx on public.messages(sender_id);
 create index if not exists friendships_requester_idx on public.friendships(requester_id);
 create index if not exists friendships_addressee_idx on public.friendships(addressee_id);
 create index if not exists reports_status_idx on public.reports(status);
-create index if not exists reports_reported_user_idx on public.reports(reported_user_id);
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -254,6 +261,7 @@ for each row execute function public.touch_updated_at();
 alter table public.profiles enable row level security;
 alter table public.profile_private enable row level security;
 alter table public.profile_private_vault enable row level security;
+alter table public.legal_acceptances enable row level security;
 alter table public.conversations enable row level security;
 alter table public.conversation_members enable row level security;
 alter table public.messages enable row level security;
@@ -276,6 +284,7 @@ grant select on public.profile_private to authenticated;
 grant insert (user_id, full_name, phone, home_address, pesel, data_consent_at) on public.profile_private to authenticated;
 grant update (full_name, phone, home_address, pesel, data_consent_at, updated_at) on public.profile_private to authenticated;
 revoke all on public.profile_private_vault from public, anon, authenticated;
+grant select, insert, update on public.legal_acceptances to authenticated;
 grant select, insert, update, delete on public.conversations to authenticated;
 grant select, insert, update, delete on public.conversation_members to authenticated;
 grant select, insert, update, delete on public.messages to authenticated;
@@ -375,6 +384,25 @@ with check ((select auth.uid()) = user_id);
 drop policy if exists "profile_private_update_own_or_admin" on public.profile_private;
 create policy "profile_private_update_own_or_admin"
 on public.profile_private for update
+to authenticated
+using ((select auth.uid()) = user_id or (select public.is_admin()))
+with check ((select auth.uid()) = user_id or (select public.is_admin()));
+
+drop policy if exists "legal_acceptances_select_own_or_admin" on public.legal_acceptances;
+create policy "legal_acceptances_select_own_or_admin"
+on public.legal_acceptances for select
+to authenticated
+using ((select auth.uid()) = user_id or (select public.is_admin()));
+
+drop policy if exists "legal_acceptances_insert_own" on public.legal_acceptances;
+create policy "legal_acceptances_insert_own"
+on public.legal_acceptances for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "legal_acceptances_update_own_or_admin" on public.legal_acceptances;
+create policy "legal_acceptances_update_own_or_admin"
+on public.legal_acceptances for update
 to authenticated
 using ((select auth.uid()) = user_id or (select public.is_admin()))
 with check ((select auth.uid()) = user_id or (select public.is_admin()));
