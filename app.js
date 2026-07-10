@@ -1173,11 +1173,17 @@ function conversationUnread(conversation, member) {
 function setInboxContext(title, subtitle = "", options = {}) {
   const { showStories = false, showFilters = false } = options;
   if (isMobileLayout() && title === "Czaty") {
-    sectionTitle.textContent = BRAND_NAME;
-    sectionSubtitle.textContent = "Czaty";
+    sectionTitle.textContent = BRAND_NAME.toLowerCase();
+    sectionSubtitle.textContent = "";
+    searchInput.placeholder = "Zapytaj LinkTalk AI lub wyszukaj";
+  } else if (title === "Relacje") {
+    sectionTitle.textContent = title;
+    sectionSubtitle.textContent = subtitle || BRAND_NAME;
+    searchInput.placeholder = "Szukaj znajomych lub username";
   } else {
     sectionTitle.textContent = title;
     sectionSubtitle.textContent = subtitle || BRAND_NAME;
+    searchInput.placeholder = "Szukaj lub napisz wiadomosc";
   }
   storyStrip?.classList.toggle("hidden", !showStories);
   filtersBar?.classList.toggle("hidden", !showFilters);
