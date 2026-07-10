@@ -119,6 +119,28 @@ Przy wlasnej domenie ustaw jednorazowo:
 
 Jesli `https://linktalk.pl/` pokazuje zly certyfikat albo blad HTTPS, to problem lezy w konfiguracji GitHub Pages dla domeny, nie w samym kodzie aplikacji.
 
+## GitHub Copilot
+
+Repozytorium ma teraz gotowe pliki pod GitHub Copilot:
+
+- `.github/copilot-instructions.md` - stale instrukcje dla calego repo
+- `.github/instructions/frontend.instructions.md` - zasady dla frontendu i PWA
+- `.github/instructions/platform.instructions.md` - zasady dla Androida, workflow i deployu
+- `.github/prompts/linktalk-ui-screen.prompt.md`
+- `.github/prompts/linktalk-auth-flow.prompt.md`
+- `.github/prompts/linktalk-release-check.prompt.md`
+- `.github/prompts/linktalk-legal-copy.prompt.md`
+- `AGENTS.md` - dodatkowe wskazowki dla agentow AI pracujacych na repo
+
+Przyklady uzycia w IDE z Copilot Chat:
+
+- `/linktalk-ui-screen`
+- `/linktalk-auth-flow`
+- `/linktalk-release-check`
+- `/linktalk-legal-copy`
+
+Te prompt files sa funkcja GitHub Copilot w trybie public preview dla VS Code, Visual Studio i JetBrains. Repozytoryjne instrukcje (`.github/copilot-instructions.md` i `.github/instructions/*.instructions.md`) dzialaja jako stale tlo dla odpowiedzi Copilota.
+
 ## Android APK
 
 Katalog `android/` zawiera prosta aplikacje Android WebView, ktora otwiera ten sam link GitHub Pages. Workflow `.github/workflows/android-apk.yml` zostawiamy do recznego uruchomienia, jesli chcesz osobno pobrac artifact APK z GitHub Actions. Standardowy publiczny link do APK aktualizuje workflow Pages.
