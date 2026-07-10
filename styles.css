@@ -3858,3 +3858,28 @@ body.app-active .details-quick-action {
     justify-content: flex-start;
   }
 }
+
+body.app-active .settings-profile-card {
+  background: linear-gradient(180deg, rgba(8, 102, 255, 0.18), rgba(8, 102, 255, 0.05));
+  border-color: rgba(84, 180, 255, 0.16);
+}
+
+body.app-active .settings-doc-item,
+body.app-active .settings-status-card {
+  background: var(--panel-2);
+}
+
+body.app-active .settings-doc-item:hover,
+body.app-active .settings-status-card:hover {
+  background: #22252b;
+}
+
+@media (max-width: 900px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
