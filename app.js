@@ -3589,6 +3589,9 @@ function bindUi() {
   document.getElementById("showTermsAuthButton")?.addEventListener("click", () => openInfoDocument("terms"));
   document.getElementById("showPrivacyAuthButton")?.addEventListener("click", () => openInfoDocument("privacy"));
   listenInfoButton?.addEventListener("click", toggleInfoNarration);
+  listenLandingButton?.addEventListener("click", toggleLandingNarration);
+  listenTermsButton?.addEventListener("click", () => openInfoDocumentWithAudio("terms"));
+  listenPrivacyButton?.addEventListener("click", () => openInfoDocumentWithAudio("privacy"));
   infoModal?.addEventListener("close", stopInfoNarration);
   authInstallButton?.addEventListener("click", handleInstallClick);
   authTopInstallButton?.addEventListener("click", handleInstallClick);
@@ -3679,6 +3682,7 @@ function bindUi() {
     if (state.activeView === "chats" || state.activeView === "groups") renderConversationList();
     else renderUtilityView(state.activeView).catch(() => {});
   });
+  updateLandingNarrationButton();
   refreshIcons();
 }
 
