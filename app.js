@@ -2984,7 +2984,7 @@ function openSettings() {
         </div>
         <div class="settings-status-card">
           <strong>${verification.phoneConfirmed ? "Telefon potwierdzony" : "Telefon do dopiecia"}</strong>
-          <span>${verification.phoneConfirmed ? "Numer jest juz spięty z kontem." : "Po konfiguracji dostawcy SMS mozna od razu domykac konto kodem."}</span>
+          <span>${verification.phoneConfirmed ? "Numer jest juz spiety z kontem." : "Po konfiguracji dostawcy SMS mozna od razu domykac konto kodem."}</span>
         </div>
       </div>
     </div>
