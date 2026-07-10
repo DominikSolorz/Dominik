@@ -3142,57 +3142,11 @@ async function renderUtilityView(view) {
 }
 
 function bindUi() {
-  refreshAppButton?.addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
-  authLoginModeButton?.addEventListener("click", () => setAuthMode("login"));
-  authRegisterModeButton?.addEventListener("click", () => setAuthMode("register"));
-  authForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (state.isOffline) {
-      setAuthStatus("Brak internetu. Nowe logowanie wymaga polaczenia, ale zapisane rozmowy otworza sie automatycznie po rozpoznaniu sesji.", "error");
-      return;
-    }
-    if (!authForm.reportValidity()) return;
-    lastAuthEmail = document.getElementById("authEmail").value.trim();
-    setAuthBusy(true, "Logowanie...");
-    try {
-      await login(lastAuthEmail, document.getElementById("authPassword").value);
-      setAuthStatus("Zalogowano. Laduje rozmowy...", "success");
-    } catch (error) {
-      showAuthError(error);
-    } finally {
-      setAuthBusy(false);
-    }
-  });
-
-  registerButton?.addEventListener("click", async () => {
-    if (state.isOffline) {
-      setAuthStatus("Brak internetu. Rejestracja wymaga polaczenia z serwerem.", "error");
-      return;
-    }
-    if (!authForm.reportValidity()) return;
-    lastAuthEmail = document.getElementById("authEmail").value.trim();
-    setAuthBusy(true, "Tworzenie konta...");
-    try {
-      const registrationData = collectRegistrationFields();
-      const message = await register(lastAuthEmail, document.getElementById("authPassword").value, registrationData);
-      if (!message.includes("zalogowano")) startResendCooldown(45);
-      setAuthStatus(message, "success", {
-        showResend: !message.includes("zalogowano"),
-        showEmailOtp: !message.includes("zalogowano")
-      });
-    } catch (error) {
-      showAuthError(error);
-    } finally {
-      setAuthBusy(false);
-    }
-  });
-
-  resendConfirmationButton?.addEventListener("click", resendConfirmationEmail);
-  verifyEmailOtpButton?.addEventListener("click", verifyEmailOtpCode);
-  authRateLimitHelpButton?.addEventListener("click", () => openInfoDocument("rateLimit"));
-  document.getElementById("showTermsAuthButton")?.addEventListener("click", () => openInfoDocument("terms"));
-  document.getElementById("showPrivacyAuthButton")?.addEventListener("click", () => openInfoDocument("privacy"));
-  authInstallButton?.addEventListener("click", async () => {
+  const openAuthForMode = (mode) => {
+    setAuthMode(mode);
+    setAuthPanelOpen(true);
+  };
+  const handleInstallClick = async () => {
     if (deferredInstallPrompt && !isStandaloneApp()) {
       deferredInstallPrompt.prompt();
       await deferredInstallPrompt.userChoice.catch(() => null);
@@ -3205,7 +3159,72 @@ function bindUi() {
       return;
     }
     toast("Na Androidzie otworz te strone w Chrome. Gdy przegladarka pozwoli, przycisk zmieni sie w instalacje aplikacji.");
+  };
+
+  refreshAppButton?.addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
+  authLoginModeButton?.addEventListener("click", () => setAuthMode("login"));
+  authRegisterModeButton?.addEventListener("click", () => setAuthMode("register"));
+  authTopLoginButton?.addEventListener("click", () => openAuthForMode("login"));
+  authTopRegisterButton?.addEventListener("click", () => openAuthForMode("register"));
+  heroLoginButton?.addEventListener("click", () => openAuthForMode("login"));
+  heroRegisterButton?.addEventListener("click", () => openAuthForMode("register"));
+  authClosePanelButton?.addEventListener("click", () => setAuthPanelOpen(false));
+  authSecondaryModeButton?.addEventListener("click", () => setAuthMode(authMode === "login" ? "register" : "login"));
+  toggleAuthPasswordButton?.addEventListener("click", () => {
+    if (!authPassword) return;
+    authPassword.type = authPassword.type === "password" ? "text" : "password";
+    syncPasswordToggleIcon();
   });
+  authForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (authMode === "register") {
+      if (state.isOffline) {
+        setAuthStatus("Brak internetu. Rejestracja wymaga polaczenia z serwerem.", "error");
+        return;
+      }
+      if (!authForm.reportValidity()) return;
+      lastAuthEmail = document.getElementById("authEmail").value.trim();
+      setAuthBusy(true, "Tworzenie konta...");
+      try {
+        const registrationData = collectRegistrationFields();
+        const message = await register(lastAuthEmail, authPassword.value, registrationData);
+        if (!message.includes("zalogowano")) startResendCooldown(45);
+        setAuthStatus(message, "success", {
+          showResend: !message.includes("zalogowano"),
+          showEmailOtp: !message.includes("zalogowano")
+        });
+      } catch (error) {
+        showAuthError(error);
+      } finally {
+        setAuthBusy(false);
+      }
+      return;
+    }
+    if (state.isOffline) {
+      setAuthStatus("Brak internetu. Nowe logowanie wymaga polaczenia, ale zapisane rozmowy otworza sie automatycznie po rozpoznaniu sesji.", "error");
+      return;
+    }
+    if (!authForm.reportValidity()) return;
+    lastAuthEmail = document.getElementById("authEmail").value.trim();
+    setAuthBusy(true, "Logowanie...");
+    try {
+      await login(lastAuthEmail, authPassword.value);
+      setAuthStatus("Zalogowano. Laduje rozmowy...", "success");
+    } catch (error) {
+      showAuthError(error);
+    } finally {
+      setAuthBusy(false);
+    }
+  });
+
+  resendConfirmationButton?.addEventListener("click", resendConfirmationEmail);
+  verifyEmailOtpButton?.addEventListener("click", verifyEmailOtpCode);
+  authRateLimitHelpButton?.addEventListener("click", () => openInfoDocument("rateLimit"));
+  document.getElementById("showTermsAuthButton")?.addEventListener("click", () => openInfoDocument("terms"));
+  document.getElementById("showPrivacyAuthButton")?.addEventListener("click", () => openInfoDocument("privacy"));
+  authInstallButton?.addEventListener("click", handleInstallClick);
+  authTopInstallButton?.addEventListener("click", handleInstallClick);
+  heroInstallButton?.addEventListener("click", handleInstallClick);
 
   composer.addEventListener("submit", async (event) => {
     event.preventDefault();
