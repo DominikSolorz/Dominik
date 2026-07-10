@@ -2868,6 +2868,11 @@ function friendshipName(row) {
   return profile?.display_name || profile?.username || "Uzytkownik";
 }
 
+function friendshipProfile(row) {
+  const otherId = row.requester_id === state.user.id ? row.addressee_id : row.requester_id;
+  return state.profiles[otherId] || null;
+}
+
 async function renderContactsView() {
   await loadFriendships();
   setInboxContext("Relacje", "Znajomi i osoby blisko Ciebie", { showStories: true, showFilters: false });
@@ -2876,24 +2881,86 @@ async function renderContactsView() {
   const incoming = state.friendships.filter((row) => row.status === "pending" && row.addressee_id === state.user.id);
   const outgoing = state.friendships.filter((row) => row.status === "pending" && row.requester_id === state.user.id);
   conversationList.innerHTML = `
-    <div class="details-card">
-      <h3>Znajomi</h3>
-      <button class="primary-button full-width" id="addFriendButton" type="button">Dodaj po username</button>
-    </div>
-    ${incoming.length ? `<div class="details-card"><h3>Prosby</h3>${incoming.map((row) => `
-      <div class="settings-row">
-        <span>${escapeHtml(friendshipName(row))}</span>
-        <span>
-          <button class="mini-action" data-accept-friend="${row.id}">Akceptuj</button>
-          <button class="mini-action" data-decline-friend="${row.id}">Odrzuc</button>
-        </span>
+    <div class="contact-block">
+      <div class="contact-block-head">
+        <div>
+          <h3>Relacje</h3>
+          <p class="preview">Dodaj osoby po username i otwieraj rozmowy jednym kliknieciem.</p>
+        </div>
+        <button class="primary-button" id="addFriendButton" type="button">Dodaj osobe</button>
       </div>
-    `).join("")}</div>` : ""}
-    <div class="details-card">
-      <h3>Lista kontaktow</h3>
-      ${accepted.length ? accepted.map((row) => `<button class="list-button" data-chat-username="${escapeHtml(state.profiles[row.requester_id === state.user.id ? row.addressee_id : row.requester_id]?.username || "")}">${escapeHtml(friendshipName(row))}</button>`).join("") : "<p class='preview'>Brak zaakceptowanych kontaktow.</p>"}
     </div>
-    ${outgoing.length ? `<div class="details-card"><h3>Wyslane prosby</h3>${outgoing.map((row) => `<p class="preview">${escapeHtml(friendshipName(row))}</p>`).join("")}</div>` : ""}
+    ${incoming.length ? `
+      <div class="contact-block">
+        <div class="details-section-label">Prosby do zaakceptowania</div>
+        ${incoming.map((row) => {
+          const profile = friendshipProfile(row);
+          const username = profile?.username ? `@${profile.username}` : "Nowa osoba";
+          return `
+            <div class="contact-person-row">
+              ${avatarMarkup({
+                label: friendshipName(row),
+                imageUrl: profile?.avatar_url,
+                online: profile?.is_online
+              })}
+              <div class="contact-person-main">
+                <strong>${escapeHtml(friendshipName(row))}</strong>
+                <span>${escapeHtml(username)}</span>
+              </div>
+              <div class="contact-person-actions">
+                <button class="mini-action" data-accept-friend="${row.id}">Akceptuj</button>
+                <button class="mini-action" data-decline-friend="${row.id}">Odrzuc</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    ` : ""}
+    <div class="contact-block">
+      <div class="details-section-label">Lista kontaktow</div>
+      ${accepted.length ? accepted.map((row) => {
+        const profile = friendshipProfile(row);
+        const username = profile?.username || "";
+        const subtitle = profile?.is_online
+          ? "Aktywny(a) teraz"
+          : (profile?.status_text || `@${username}`);
+        return `
+          <button class="contact-person-row contact-person-button" data-chat-username="${escapeHtml(username)}" type="button">
+            ${avatarMarkup({
+              label: friendshipName(row),
+              imageUrl: profile?.avatar_url,
+              online: profile?.is_online
+            })}
+            <div class="contact-person-main">
+              <strong>${escapeHtml(friendshipName(row))}</strong>
+              <span>${escapeHtml(subtitle)}</span>
+            </div>
+            <span class="contact-person-meta">${profile?.is_online ? "Online" : "Czat"}</span>
+          </button>
+        `;
+      }).join("") : "<p class='preview'>Brak zaakceptowanych kontaktow.</p>"}
+    </div>
+    ${outgoing.length ? `
+      <div class="contact-block">
+        <div class="details-section-label">Wyslane prosby</div>
+        ${outgoing.map((row) => {
+          const profile = friendshipProfile(row);
+          return `
+            <div class="contact-person-row contact-person-row-muted">
+              ${avatarMarkup({
+                label: friendshipName(row),
+                imageUrl: profile?.avatar_url
+              })}
+              <div class="contact-person-main">
+                <strong>${escapeHtml(friendshipName(row))}</strong>
+                <span>Prosba oczekuje na odpowiedz</span>
+              </div>
+              <span class="contact-person-meta">Wyslano</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    ` : ""}
   `;
   conversationList.querySelector("#addFriendButton").addEventListener("click", () => sendFriendRequest().catch((error) => toast(error.message)));
   conversationList.querySelectorAll("[data-accept-friend]").forEach((button) => {
@@ -2913,9 +2980,35 @@ async function renderNotificationsView() {
   if (storyStrip) storyStrip.innerHTML = "";
   const incoming = state.friendships.filter((row) => row.status === "pending" && row.addressee_id === state.user.id);
   conversationList.innerHTML = `
-    <div class="details-card">
-      <h3>Prosby o kontakt</h3>
-      ${incoming.length ? incoming.map((row) => `<div class="settings-row"><span>${escapeHtml(friendshipName(row))}</span><button class="mini-action" data-accept-friend="${row.id}">Akceptuj</button></div>`).join("") : "<p class='preview'>Brak nowych prosb.</p>"}
+    <div class="contact-block">
+      <div class="contact-block-head">
+        <div>
+          <h3>Powiadomienia</h3>
+          <p class="preview">Tu wpadaja nowe prosby i aktywnosc zwiazana z kontaktami.</p>
+        </div>
+      </div>
+    </div>
+    <div class="contact-block">
+      <div class="details-section-label">Prosby o kontakt</div>
+      ${incoming.length ? incoming.map((row) => {
+        const profile = friendshipProfile(row);
+        return `
+          <div class="contact-person-row">
+            ${avatarMarkup({
+              label: friendshipName(row),
+              imageUrl: profile?.avatar_url,
+              online: profile?.is_online
+            })}
+            <div class="contact-person-main">
+              <strong>${escapeHtml(friendshipName(row))}</strong>
+              <span>${escapeHtml(profile?.status_text || "Chce nawiazac kontakt")}</span>
+            </div>
+            <div class="contact-person-actions">
+              <button class="mini-action" data-accept-friend="${row.id}">Akceptuj</button>
+            </div>
+          </div>
+        `;
+      }).join("") : "<p class='preview'>Brak nowych prosb.</p>"}
     </div>
   `;
   conversationList.querySelectorAll("[data-accept-friend]").forEach((button) => {
