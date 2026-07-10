@@ -759,6 +759,7 @@ function showAuth() {
   document.body.classList.remove("app-active");
   setupWarning.classList.toggle("hidden", hasBackend);
   authForm.classList.toggle("hidden", !hasBackend);
+  setAuthPanelOpen(!hasBackend);
   setAuthMode(authMode);
   renderConnectionStatus();
 }
@@ -768,6 +769,26 @@ function showApp() {
   app.classList.remove("locked");
   document.body.classList.add("app-active");
   renderConnectionStatus();
+}
+
+function setAuthPanelOpen(isOpen = false) {
+  authPanelOpen = Boolean(isOpen);
+  authPanelShell?.classList.toggle("hidden", !authPanelOpen);
+  authScreen?.classList.toggle("auth-panel-open", authPanelOpen);
+  if (authPanelOpen) {
+    window.setTimeout(() => document.getElementById("authEmail")?.focus(), 40);
+  }
+}
+
+function syncPasswordToggleIcon() {
+  if (!toggleAuthPasswordButton || !authPassword) return;
+  const isVisible = authPassword.type === "text";
+  toggleAuthPasswordButton.innerHTML = isVisible
+    ? '<i data-lucide="eye-off"></i>'
+    : '<i data-lucide="eye"></i>';
+  toggleAuthPasswordButton.setAttribute("aria-label", isVisible ? "Ukryj haslo" : "Pokaz haslo");
+  toggleAuthPasswordButton.title = isVisible ? "Ukryj haslo" : "Pokaz haslo";
+  refreshIcons();
 }
 
 function setAuthStatus(message = "", type = "", options = {}) {
@@ -781,6 +802,7 @@ function setAuthStatus(message = "", type = "", options = {}) {
   authRateLimitHelpButton?.classList.toggle("hidden", !showRateLimitHelp);
   authEmailOtpPanel?.classList.toggle("hidden", !showEmailOtp);
   if (!showEmailOtp && authEmailOtp) authEmailOtp.value = "";
+  if (message) setAuthPanelOpen(true);
   syncResendButtonState();
 }
 
@@ -789,8 +811,26 @@ function setAuthMode(mode = "login") {
   authLoginModeButton?.classList.toggle("active", authMode === "login");
   authRegisterModeButton?.classList.toggle("active", authMode === "register");
   authRegisterFields?.classList.toggle("hidden", authMode !== "register");
-  registerButton?.classList.toggle("hidden", authMode !== "register");
   authActionRow?.classList.toggle("is-login-mode", authMode === "login");
+  authActionRow?.classList.toggle("is-register-mode", authMode === "register");
+  if (authPrimaryButton) authPrimaryButton.textContent = authMode === "login" ? "Zaloguj" : "Utworz konto";
+  if (authSecondaryModeButton) {
+    authSecondaryModeButton.classList.toggle("hidden", false);
+    authSecondaryModeButton.textContent = authMode === "login" ? "Nowe konto" : "Mam juz konto";
+  }
+  if (authPanelEyebrow) authPanelEyebrow.textContent = authMode === "login" ? "Zaloguj" : "Nowe konto";
+  if (authPanelTitle) authPanelTitle.textContent = authMode === "login" ? "Wejdz do rozmow" : "Stworz konto i zacznij pisac";
+  if (authPanelCopy) {
+    authPanelCopy.textContent = authMode === "login"
+      ? "Szybkie konto, nowoczesny uklad i dalszy ciag na laptopie, stronie oraz telefonie."
+      : "Najpierw tworzymy konto, potem potwierdzasz email i domykasz numer telefonu, gdy SMS sa juz aktywne.";
+  }
+  if (authPassword) {
+    authPassword.autocomplete = authMode === "login" ? "current-password" : "new-password";
+    authPassword.placeholder = authMode === "login" ? "" : "Minimum 6 znakow";
+    authPassword.type = "password";
+  }
+  syncPasswordToggleIcon();
 }
 
 function setAuthBusy(isBusy, message = "") {
@@ -836,7 +876,7 @@ function humanizeAuthError(error) {
   const code = String(error?.code || error?.error_code || "");
   const lower = message.toLowerCase();
   if (status === 429 || lower.includes("too many requests") || lower.includes("rate limit")) {
-    return "Supabase zablokowal kolejne proby rejestracji lub wysylki emaila limitem 429. Odczekaj kilka minut i sprobuj ponownie. Do prywatnych testow najlepiej w Supabase wylaczyc Confirm email.";
+    return "Supabase zablokowal kolejne proby rejestracji lub wysylki emaila limitem 429. Domyslna wysylka testowa ma bardzo niski limit, nawet 2 maile na godzine, wiec do normalnych testow trzeba wlaczyc wlasny SMTP albo tymczasowo wylaczyc Confirm email.";
   }
   if (status >= 500 || lower.includes("database error querying schema") || code.includes("unexpected_failure")) {
     return "Supabase Auth zwrocil blad serwera przy logowaniu. To nie jest blad hasla w aplikacji, tylko problem konfiguracji Auth/Supabase.";
