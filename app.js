@@ -1024,11 +1024,30 @@ function buildNarrationText(doc) {
   return chunks.filter(Boolean).join(". ");
 }
 
+function buildLandingNarrationText() {
+  const parts = [
+    document.querySelector(".hero-kicker")?.textContent?.trim(),
+    document.querySelector(".auth-hero-copy h1")?.textContent?.trim(),
+    document.getElementById("authIntro")?.textContent?.trim(),
+    runtimeSiteValue?.textContent?.trim(),
+    runtimeSiteNote?.textContent?.trim(),
+    runtimeDataValue?.textContent?.trim(),
+    runtimeDataNote?.textContent?.trim(),
+    runtimeApkValue?.textContent?.trim(),
+    runtimeApkNote?.textContent?.trim(),
+    runtimeOfflineValue?.textContent?.trim(),
+    runtimeOfflineNote?.textContent?.trim()
+  ];
+  return parts.filter(Boolean).join(". ");
+}
+
 function stopInfoNarration() {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   infoNarrationActive = false;
+  landingNarrationActive = false;
   updateInfoNarrationButton();
+  updateLandingNarrationButton();
 }
 
 function updateInfoNarrationButton() {
@@ -1042,6 +1061,14 @@ function updateInfoNarrationButton() {
   listenInfoButton.setAttribute("aria-label", infoNarrationActive ? "Zatrzymaj odsluch" : "Odsluchaj dokument");
   listenInfoButton.title = infoNarrationActive ? "Zatrzymaj odsluch" : "Odsluchaj dokument";
   refreshIcons();
+}
+
+function updateLandingNarrationButton() {
+  if (!listenLandingButton) return;
+  const supported = "speechSynthesis" in window;
+  listenLandingButton.classList.toggle("hidden", !supported);
+  if (!supported) return;
+  listenLandingButton.textContent = landingNarrationActive ? "Zatrzymaj odsluch strony" : "Posluchaj tej strony";
 }
 
 function toggleInfoNarration() {
@@ -1069,6 +1096,37 @@ function toggleInfoNarration() {
   window.speechSynthesis.speak(utterance);
   infoNarrationActive = true;
   updateInfoNarrationButton();
+}
+
+function toggleLandingNarration() {
+  if (!("speechSynthesis" in window)) {
+    toast("Ta przegladarka nie obsluguje odsluchu tekstu.");
+    return;
+  }
+  if (landingNarrationActive) {
+    stopInfoNarration();
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(buildLandingNarrationText());
+  utterance.lang = "pl-PL";
+  utterance.rate = 0.98;
+  utterance.onend = () => {
+    landingNarrationActive = false;
+    updateLandingNarrationButton();
+  };
+  utterance.onerror = () => {
+    landingNarrationActive = false;
+    updateLandingNarrationButton();
+  };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+  landingNarrationActive = true;
+  updateLandingNarrationButton();
+}
+
+function openInfoDocumentWithAudio(kind) {
+  openInfoDocument(kind);
+  window.setTimeout(() => toggleInfoNarration(), 80);
 }
 
 function authRedirectUrl() {
@@ -1417,6 +1475,7 @@ async function init() {
   bindUi();
   syncBuildState().catch(() => {});
   syncInlineApkDownload().catch(() => {});
+  loadRuntimeHealthStatus().catch(() => {});
   renderConnectionStatus();
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
