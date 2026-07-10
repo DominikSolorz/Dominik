@@ -1,7 +1,12 @@
-const CACHE_NAME = "linktalk-v4";
+const BUILD_VERSION = "2026.07.10-02";
+const CACHE_NAME = `linktalk-v5-${BUILD_VERSION}`;
 const APP_ASSETS = [
   "./",
   "./index.html",
+  `./styles.css?v=${BUILD_VERSION}`,
+  `./app.js?v=${BUILD_VERSION}`,
+  `./manifest.webmanifest?v=${BUILD_VERSION}`,
+  `./config.js?v=${BUILD_VERSION}`,
   "./styles.css",
   "./app.js",
   "./app-enhancements.js",
@@ -22,7 +27,7 @@ function appScopePath() {
 
 function scopedAssetPath(asset) {
   const scope = appScopePath();
-  const trimmed = asset.replace(/^\.\//, "");
+  const trimmed = asset.replace(/^\.\//, "").split("?")[0].split("#")[0];
   if (!trimmed) return scope || "/";
   return `${scope}/${trimmed}`.replace(/\/{2,}/g, "/");
 }

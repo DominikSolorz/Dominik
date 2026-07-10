@@ -4,11 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0d10" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="linktalk-build" content="2026.07.10-02" />
     <title>LinkTalk</title>
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260710-02" />
+    <link rel="stylesheet" href="styles.css?v=20260710-02" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="config.js"></script>
+    <script src="config.js?v=20260710-02"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -200,6 +202,10 @@
               <button class="inline-link-button" id="showTermsAuthButton" type="button">Regulamin</button>
               <button class="inline-link-button" id="showPrivacyAuthButton" type="button">Polityka prywatnosci</button>
             </div>
+            <div class="auth-support-row">
+              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-02</span>
+              <button class="inline-link-button subtle" id="refreshAppButton" type="button">Wymus odswiezenie</button>
+            </div>
             <div class="setup-warning hidden" id="setupWarning">
               Brakuje konfiguracji Supabase w pliku <strong>config.js</strong>.
               Uzupelnij `supabaseUrl` i `supabaseAnonKey`, potem uruchom ponownie.
@@ -300,6 +306,9 @@
       <div class="info-content" id="infoContent"></div>
     </dialog>
 
-    <script type="module" src="app.js"></script>
+    <script>
+      window.LINKTALK_BUILD = "2026.07.10-02";
+    </script>
+    <script type="module" src="app.js?v=20260710-02"></script>
   </body>
 </html>

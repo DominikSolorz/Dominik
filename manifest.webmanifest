@@ -2,10 +2,12 @@
   "name": "LinkTalk",
   "short_name": "LinkTalk",
   "description": "LinkTalk - komunikator WWW i Android z trybem offline.",
-  "start_url": "./index.html",
+  "id": "./",
+  "scope": "./",
+  "start_url": "./",
   "display": "standalone",
-  "background_color": "#f0f2f5",
-  "theme_color": "#0866ff",
+  "background_color": "#0b0f17",
+  "theme_color": "#0a67ff",
   "icons": [
     {
       "src": "icon.svg",

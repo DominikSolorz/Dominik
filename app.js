@@ -12,9 +12,10 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_VOICE_SECONDS = 300;
 const OFFLINE_CACHE_VERSION = 1;
 const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
-const MIN_APK_DOWNLOAD_BYTES = 250 * 1024;
+const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-02");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -90,6 +91,8 @@ const authEmailOtp = document.getElementById("authEmailOtp");
 const verifyEmailOtpButton = document.getElementById("verifyEmailOtpButton");
 const resendConfirmationButton = document.getElementById("resendConfirmationButton");
 const authRateLimitHelpButton = document.getElementById("authRateLimitHelpButton");
+const buildBadge = document.getElementById("buildBadge");
+const refreshAppButton = document.getElementById("refreshAppButton");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
 const messagesEl = document.getElementById("messages");
@@ -651,9 +654,13 @@ async function resolveApkDownloadAvailability(force = false) {
   apkDownloadChecked = true;
   try {
     const response = await fetch(apkUrl, { method: "HEAD", cache: "no-store" });
+    const contentType = String(response.headers.get("content-type") || "").toLowerCase();
     const contentLength = Number.parseInt(response.headers.get("content-length") || "", 10);
     const hasExpectedSize = Number.isFinite(contentLength) ? contentLength >= MIN_APK_DOWNLOAD_BYTES : true;
-    apkDownloadAvailable = response.ok && hasExpectedSize;
+    const looksLikeApk = contentType.includes("android.package-archive")
+      || contentType.includes("application/octet-stream")
+      || apkUrl.toLowerCase().endsWith(".apk");
+    apkDownloadAvailable = response.ok && looksLikeApk && hasExpectedSize;
   } catch {
     apkDownloadAvailable = false;
   }
@@ -687,6 +694,42 @@ async function syncInlineApkDownload() {
       ? "Chrome moze zainstalowac te strone jako aplikacje. Publiczny link do APK pojawi sie tutaj po kolejnym pelnym buildzie Android."
       : "Link do APK pojawi sie tutaj po pierwszym pelnym buildzie Android i publikacji strony.");
   authDownloadHint.classList.remove("hidden");
+}
+
+function syncBuildBadge() {
+  if (buildBadge) {
+    buildBadge.textContent = `Wydanie ${BUILD_VERSION}`;
+  }
+}
+
+async function refreshInstalledAssets() {
+  if ("serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations().catch(() => []);
+    await Promise.all((registrations || []).map((registration) => registration.update().catch(() => {})));
+  }
+  if ("caches" in window) {
+    const keys = await caches.keys().catch(() => []);
+    await Promise.all(
+      (keys || [])
+        .filter((key) => String(key).startsWith("linktalk-v"))
+        .map((key) => caches.delete(key).catch(() => false))
+    );
+  }
+  const refreshedUrl = new URL(window.location.href);
+  refreshedUrl.searchParams.set("v", BUILD_VERSION.replace(/[^\d]/g, ""));
+  refreshedUrl.searchParams.set("refresh", Date.now().toString());
+  window.location.replace(refreshedUrl.toString());
+}
+
+async function syncBuildState() {
+  syncBuildBadge();
+  const buildStorageKey = "linktalk-build-version";
+  const previousBuild = localStorage.getItem(buildStorageKey);
+  localStorage.setItem(buildStorageKey, BUILD_VERSION);
+  if (previousBuild && previousBuild !== BUILD_VERSION && "serviceWorker" in navigator) {
+    const registrations = await navigator.serviceWorker.getRegistrations().catch(() => []);
+    await Promise.all((registrations || []).map((registration) => registration.update().catch(() => {})));
+  }
 }
 
 function showAuth() {
@@ -1155,6 +1198,7 @@ function refreshIcons() {
 
 async function init() {
   bindUi();
+  syncBuildState().catch(() => {});
   syncInlineApkDownload().catch(() => {});
   renderConnectionStatus();
   window.addEventListener("beforeinstallprompt", (event) => {
@@ -2587,6 +2631,7 @@ function openSettings() {
       <button class="list-button" id="showTerms"><i data-lucide="file-text"></i>Regulamin</button>
       <button class="list-button" id="showPrivacy"><i data-lucide="shield-check"></i>Polityka prywatnosci</button>
       <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
+      <button class="list-button" id="refreshApplication"><i data-lucide="refresh-cw"></i>Odswiez aplikacje</button>
       <button class="list-button" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
     </div>
     <div class="settings-content">
@@ -2596,6 +2641,7 @@ function openSettings() {
       <div class="settings-row"><span>Status</span><span>${escapeHtml(state.profile?.status_text || "")}</span></div>
       <div class="settings-row"><span>Email</span><strong>${verification.emailConfirmed ? "potwierdzony" : "czeka na potwierdzenie"}</strong></div>
       <div class="settings-row"><span>Telefon</span><strong>${verification.phoneConfirmed ? maskPhoneNumber(verification.phone) : (verification.phone ? "czeka na kod SMS" : "nie dodano")}</strong></div>
+      <div class="settings-row"><span>Wydanie</span><strong>${escapeHtml(BUILD_VERSION)}</strong></div>
       <div class="settings-banner">
         <strong>Profil, prywatnosc i bezpieczenstwo</strong>
         <p>Uzupelnij dane prywatne, potwierdz telefon i dopnij ustawienia maili oraz SMS. To pozwoli prowadzic komunikator jak prawdziwa, uporzadkowana usluge.</p>
@@ -2612,6 +2658,7 @@ function openSettings() {
   settingsLayout.querySelector("#showTerms").addEventListener("click", () => openInfoDocument("terms"));
   settingsLayout.querySelector("#showPrivacy").addEventListener("click", () => openInfoDocument("privacy"));
   settingsLayout.querySelector("#showPwaInstall").addEventListener("click", showPwaInstall);
+  settingsLayout.querySelector("#refreshApplication").addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
   settingsLayout.querySelector("#logoutButton").addEventListener("click", async () => {
     await supabase.auth.signOut();
   });
@@ -2899,6 +2946,7 @@ async function renderUtilityView(view) {
 }
 
 function bindUi() {
+  refreshAppButton?.addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (state.isOffline) {
