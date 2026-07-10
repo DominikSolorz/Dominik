@@ -2726,26 +2726,134 @@ async function uploadAndSendFiles(files) {
   }
 }
 
+function showLegalSettings() {
+  settingsLayout.querySelector(".settings-content").innerHTML = `
+    <h3>Informacje prawne i zasady</h3>
+    <div class="settings-banner settings-banner-dark">
+      <strong>Dokumenty i zasady</strong>
+      <p>Ten ekran jest ulozony bardziej jak menu komunikatora: najpierw wybierasz dokument, a dopiero potem czytasz szczegoly.</p>
+    </div>
+    <div class="settings-doc-list">
+      <button class="settings-doc-item" id="openTermsDocument" type="button">
+        <span>Regulamin</span>
+        <i data-lucide="chevron-right"></i>
+      </button>
+      <button class="settings-doc-item" id="openPrivacyDocument" type="button">
+        <span>Zasady ochrony prywatnosci</span>
+        <i data-lucide="chevron-right"></i>
+      </button>
+      <button class="settings-doc-item" id="openCookiesInfo" type="button">
+        <span>Zasady dotyczace plikow cookie</span>
+        <i data-lucide="chevron-right"></i>
+      </button>
+      <button class="settings-doc-item" id="openVendorsInfo" type="button">
+        <span>Informacje dotyczace oprogramowania innych producentow</span>
+        <i data-lucide="chevron-right"></i>
+      </button>
+      <button class="settings-doc-item" id="openEuInfo" type="button">
+        <span>Rozporzadzenie UE 2021/1232</span>
+        <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+  `;
+  settingsLayout.querySelector("#openTermsDocument")?.addEventListener("click", () => openInfoDocument("terms"));
+  settingsLayout.querySelector("#openPrivacyDocument")?.addEventListener("click", () => openInfoDocument("privacy"));
+  settingsLayout.querySelector("#openCookiesInfo")?.addEventListener("click", () => {
+    infoDocuments.cookies = {
+      title: "Pliki cookie",
+      intro: "LinkTalk korzysta z lokalnego zapisu potrzebnego do sesji, cache aplikacji, pracy offline i zapamietania wybranych ustawien interfejsu.",
+      sections: [
+        {
+          heading: "Jakie dane zapisujemy lokalnie",
+          bullets: [
+            "token sesji i stan logowania obslugiwany przez Supabase",
+            "ostatnie rozmowy i kolejke wiadomosci offline",
+            "ustawienia wygladu czatu, np. motyw i tapeta"
+          ]
+        }
+      ]
+    };
+    openInfoDocument("cookies");
+  });
+  settingsLayout.querySelector("#openVendorsInfo")?.addEventListener("click", () => {
+    infoDocuments.vendors = {
+      title: "Oprogramowanie innych producentow",
+      intro: "Aplikacja korzysta z uslug i bibliotek zewnetrznych potrzebnych do logowania, synchronizacji, hostingu i transkrypcji.",
+      sections: [
+        {
+          heading: "Glowni dostawcy",
+          bullets: [
+            "Supabase do bazy danych, Auth, Storage i Realtime",
+            "OpenAI do funkcji transkrypcji audio na tekst, gdy uzytkownik uruchomi te opcje",
+            "hosting WWW i narzedzia publikacji dla strony oraz APK"
+          ]
+        }
+      ]
+    };
+    openInfoDocument("vendors");
+  });
+  settingsLayout.querySelector("#openEuInfo")?.addEventListener("click", () => {
+    infoDocuments.eu = {
+      title: "Rozporzadzenie UE 2021/1232",
+      intro: "W publicznej wersji aplikacji administrator powinien dopilnowac zgodnosci z zasadami prywatnosci, tajemnicy komunikacji oraz legalnej obslugi tresci zglaszanych przez uzytkownikow.",
+      sections: [
+        {
+          heading: "Znaczenie dla komunikatora",
+          paragraphs: [
+            "Przy wdrozeniu publicznym trzeba jasno opisac zasady moderacji, przechowywania danych, zglaszania naduzyc i przetwarzania wiadomosci przez dostawcow infrastruktury.",
+            "W praktyce ten ekran jest miejscem, gdzie pokazujesz uzytkownikowi, ze usluga jest uporzadkowana i prowadzona odpowiedzialnie."
+          ]
+        }
+      ]
+    };
+    openInfoDocument("eu");
+  });
+  refreshIcons();
+}
+
 function openSettings() {
   const verification = verificationState();
   document.getElementById("settingsTitle").textContent = "Ustawienia";
   settingsLayout.innerHTML = `
     <div class="settings-menu">
-      <button class="list-button" id="editDisplayName"><i data-lucide="user-round"></i>Nazwa profilu</button>
-      <button class="list-button" id="editUsername"><i data-lucide="at-sign"></i>Username</button>
-      <button class="list-button" id="editStatus"><i data-lucide="message-square-text"></i>Status</button>
-      <button class="list-button" id="showVerificationCenter"><i data-lucide="badge-check"></i>Weryfikacja konta</button>
-      <button class="list-button" id="showPrivateData"><i data-lucide="id-card"></i>Dane osobowe</button>
-      <button class="list-button" id="toggleReadReceipts"><i data-lucide="check-check"></i>Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
-      <button class="list-button" id="toggleAutoTranscript"><i data-lucide="captions"></i>Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
-      <button class="list-button" id="showTerms"><i data-lucide="file-text"></i>Regulamin</button>
-      <button class="list-button" id="showPrivacy"><i data-lucide="shield-check"></i>Polityka prywatnosci</button>
-      <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
-      <button class="list-button" id="refreshApplication"><i data-lucide="refresh-cw"></i>Odswiez aplikacje</button>
-      <button class="list-button" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
+      <div class="settings-profile-card">
+        ${avatarMarkup({
+          label: state.profile?.display_name || state.profile?.username || "Profil",
+          imageUrl: state.profile?.avatar_url,
+          online: state.profile?.is_online
+        })}
+        <div>
+          <strong>${escapeHtml(state.profile?.display_name || "Profil")}</strong>
+          <span>@${escapeHtml(state.profile?.username || "linktalk")}</span>
+          <small>${escapeHtml(state.profile?.status_text || "Gotowy(a) do rozmowy")}</small>
+        </div>
+      </div>
+
+      <div class="settings-menu-group">
+        <div class="settings-group-title">Profil</div>
+        <button class="list-button" id="editDisplayName"><i data-lucide="user-round"></i>Nazwa profilu</button>
+        <button class="list-button" id="editUsername"><i data-lucide="at-sign"></i>Username</button>
+        <button class="list-button" id="editStatus"><i data-lucide="message-square-text"></i>Status</button>
+        <button class="list-button" id="showPrivateData"><i data-lucide="id-card"></i>Dane osobowe</button>
+      </div>
+
+      <div class="settings-menu-group">
+        <div class="settings-group-title">Prywatnosc i logowanie</div>
+        <button class="list-button" id="showVerificationCenter"><i data-lucide="badge-check"></i>Weryfikacja konta</button>
+        <button class="list-button" id="toggleReadReceipts"><i data-lucide="check-check"></i>Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
+        <button class="list-button" id="toggleAutoTranscript"><i data-lucide="captions"></i>Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
+      </div>
+
+      <div class="settings-menu-group">
+        <div class="settings-group-title">Aplikacja</div>
+        <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
+        <button class="list-button" id="showLegalHub"><i data-lucide="scroll-text"></i>Informacje prawne i zasady</button>
+        <button class="list-button" id="refreshApplication"><i data-lucide="refresh-cw"></i>Odswiez aplikacje</button>
+        <button class="list-button" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
+      </div>
     </div>
     <div class="settings-content">
-      <h3>${escapeHtml(state.profile?.display_name || "Profil")}</h3>
+      <h3>Twoje konto</h3>
       <div class="settings-row"><span>Username</span><strong>${escapeHtml(state.profile?.username || "")}</strong></div>
       <div class="settings-row"><span>Rola</span><strong>${escapeHtml(state.profile?.role || "member")}</strong></div>
       <div class="settings-row"><span>Status</span><span>${escapeHtml(state.profile?.status_text || "")}</span></div>
@@ -2756,6 +2864,16 @@ function openSettings() {
         <strong>Profil, prywatnosc i bezpieczenstwo</strong>
         <p>Uzupelnij dane prywatne, potwierdz telefon i dopnij ustawienia maili oraz SMS. To pozwoli prowadzic komunikator jak prawdziwa, uporzadkowana usluge.</p>
       </div>
+      <div class="settings-status-grid">
+        <div class="settings-status-card">
+          <strong>${verification.emailConfirmed ? "Email gotowy" : "Email czeka"}</strong>
+          <span>${verification.emailConfirmed ? "Konto moze wracac przez poczte bez przeszkod." : "Klient powinien dostac link albo 6-cyfrowy kod z maila."}</span>
+        </div>
+        <div class="settings-status-card">
+          <strong>${verification.phoneConfirmed ? "Telefon potwierdzony" : "Telefon do dopiecia"}</strong>
+          <span>${verification.phoneConfirmed ? "Numer jest juz spięty z kontem." : "Po konfiguracji dostawcy SMS mozna od razu domykac konto kodem."}</span>
+        </div>
+      </div>
     </div>
   `;
   settingsLayout.querySelector("#editDisplayName").addEventListener("click", () => updateProfileText("display_name", "Nowa nazwa profilu").catch((error) => toast(error.message)));
@@ -2765,9 +2883,8 @@ function openSettings() {
   settingsLayout.querySelector("#showPrivateData").addEventListener("click", showPrivateProfileSettings);
   settingsLayout.querySelector("#toggleReadReceipts").addEventListener("click", () => toggleProfileBoolean("read_receipts_enabled").catch((error) => toast(error.message)));
   settingsLayout.querySelector("#toggleAutoTranscript").addEventListener("click", () => toggleProfileBoolean("auto_transcribe_voice").catch((error) => toast(error.message)));
-  settingsLayout.querySelector("#showTerms").addEventListener("click", () => openInfoDocument("terms"));
-  settingsLayout.querySelector("#showPrivacy").addEventListener("click", () => openInfoDocument("privacy"));
   settingsLayout.querySelector("#showPwaInstall").addEventListener("click", showPwaInstall);
+  settingsLayout.querySelector("#showLegalHub").addEventListener("click", showLegalSettings);
   settingsLayout.querySelector("#refreshApplication").addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
   settingsLayout.querySelector("#logoutButton").addEventListener("click", async () => {
     await supabase.auth.signOut();
