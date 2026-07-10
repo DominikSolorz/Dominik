@@ -293,6 +293,10 @@
             <div class="setup-warning hidden" id="authOfflineBanner">
               Brak internetu. Jesli to konto bylo juz otwierane na tym urzadzeniu, aplikacja zaladuje ostatnio zapisane rozmowy offline.
             </div>
+            <div class="auth-mode-switch" aria-label="Tryb logowania i rejestracji">
+              <button class="auth-mode-button active" id="authLoginModeButton" type="button">Zaloguj</button>
+              <button class="auth-mode-button" id="authRegisterModeButton" type="button">Nowe konto</button>
+            </div>
             <form class="auth-form" id="authForm">
               <label class="field">
                 Email
@@ -302,7 +306,7 @@
                 Haslo
                 <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" />
               </label>
-              <div class="auth-register-fields">
+              <div class="auth-register-fields hidden" id="authRegisterFields">
                 <div class="section-caption">Dla nowego konta</div>
                 <label class="field">
                   Imie i nazwisko
@@ -327,7 +331,7 @@
                 </div>
               </div>
               <div class="modal-actions">
-                <button class="secondary-button" id="registerButton" type="button">Utworz konto</button>
+                <button class="secondary-button hidden" id="registerButton" type="button">Utworz konto</button>
                 <button class="primary-button" type="submit">Zaloguj</button>
               </div>
             </form>
