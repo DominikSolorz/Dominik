@@ -1196,9 +1196,7 @@ h3 {
 }
 
 .auth-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: none;
 }
 
 .auth-logo {
@@ -1217,6 +1215,10 @@ h3 {
 .auth-panel-copy {
   color: #c6cedb;
   line-height: 1.55;
+}
+
+.auth-lead {
+  display: none;
 }
 
 .auth-step-row {
