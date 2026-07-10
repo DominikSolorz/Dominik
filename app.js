@@ -3407,6 +3407,7 @@ function bindUi() {
   heroRegisterButton?.addEventListener("click", () => openAuthForMode("register"));
   authClosePanelButton?.addEventListener("click", () => setAuthPanelOpen(false));
   authSecondaryModeButton?.addEventListener("click", () => setAuthMode(authMode === "login" ? "register" : "login"));
+  sendEmailCodeButton?.addEventListener("click", () => requestEmailCodeForLogin(false));
   toggleAuthPasswordButton?.addEventListener("click", () => {
     if (!authPassword) return;
     authPassword.type = authPassword.type === "password" ? "text" : "password";
@@ -3424,11 +3425,12 @@ function bindUi() {
       setAuthBusy(true, "Tworzenie konta...");
       try {
         const registrationData = collectRegistrationFields();
-        const message = await register(lastAuthEmail, authPassword.value, registrationData);
-        if (!message.includes("zalogowano")) startResendCooldown(45);
-        setAuthStatus(message, "success", {
-          showResend: !message.includes("zalogowano"),
-          showEmailOtp: !message.includes("zalogowano")
+        lastEmailFlow = "signup";
+        const registrationResult = await register(lastAuthEmail, authPassword.value, registrationData);
+        if (registrationResult.kind !== "logged-in") startResendCooldown(45);
+        setAuthStatus(registrationResult.message, "success", {
+          showResend: registrationResult.kind !== "logged-in",
+          showEmailOtp: registrationResult.kind !== "logged-in"
         });
       } catch (error) {
         showAuthError(error);
@@ -3459,6 +3461,8 @@ function bindUi() {
   authRateLimitHelpButton?.addEventListener("click", () => openInfoDocument("rateLimit"));
   document.getElementById("showTermsAuthButton")?.addEventListener("click", () => openInfoDocument("terms"));
   document.getElementById("showPrivacyAuthButton")?.addEventListener("click", () => openInfoDocument("privacy"));
+  listenInfoButton?.addEventListener("click", toggleInfoNarration);
+  infoModal?.addEventListener("close", stopInfoNarration);
   authInstallButton?.addEventListener("click", handleInstallClick);
   authTopInstallButton?.addEventListener("click", handleInstallClick);
   heroInstallButton?.addEventListener("click", handleInstallClick);
