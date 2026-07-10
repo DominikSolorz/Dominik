@@ -3710,6 +3710,9 @@ body.app-active .details-quick-action {
   }
 
   .auth-panel {
+    position: relative;
+    margin: 0;
+    border-radius: 24px;
     max-height: calc(100vh - 24px);
     overflow: auto;
     padding: 20px 18px 22px;
