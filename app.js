@@ -2279,8 +2279,9 @@ function renderDetails() {
   const title = conversationTitle(conversation);
   const subtitle = conversationSubtitle(conversation);
   const other = otherConversationProfile(conversation);
+  const mediaCount = media.length;
   detailsPanel.innerHTML = `
-    <div class="details-card profile-card">
+    <div class="details-card profile-card details-hero-card">
       ${avatarMarkup({
         label: title,
         imageUrl: other?.avatar_url,
@@ -2288,9 +2289,27 @@ function renderDetails() {
       })}
       <h3>${escapeHtml(title)}</h3>
       <p class="preview">${escapeHtml(subtitle)}</p>
+      <div class="details-inline-meta">
+        <span>${conversation.is_group ? `${conversationMembers(conversation.id).length} osob` : (other?.username ? `@${other.username}` : "Rozmowa prywatna")}</span>
+        <span>${mediaCount} plik${mediaCount === 1 ? "" : mediaCount < 5 ? "i" : "ow"}</span>
+      </div>
+      <div class="details-quick-actions">
+        <button class="details-quick-action" id="detailsJumpMedia" type="button">
+          <span class="details-quick-icon"><i data-lucide="image"></i></span>
+          <span>Media</span>
+        </button>
+        <button class="details-quick-action" id="detailsMuteConversationQuick" type="button">
+          <span class="details-quick-icon"><i data-lucide="bell-off"></i></span>
+          <span>Wycisz</span>
+        </button>
+        <button class="details-quick-action" id="detailsOpenThemeQuick" type="button">
+          <span class="details-quick-icon"><i data-lucide="palette"></i></span>
+          <span>Motyw</span>
+        </button>
+      </div>
     </div>
-    <div class="details-card">
-      <h3>Dostosuj czat</h3>
+    <div class="details-card" id="detailsCustomizeSection">
+      <div class="details-section-label">Dostosuj czat</div>
       <div class="action-list">
         <button class="list-button" id="openTheme"><i data-lucide="palette"></i>Zmien tapete i motyw</button>
         <button class="list-button" id="openEmojiPicker"><i data-lucide="thumbs-up"></i>Zmien szybka reakcje</button>
@@ -2298,14 +2317,15 @@ function renderDetails() {
         <button class="list-button" id="archiveConversation"><i data-lucide="archive"></i>Archiwizuj</button>
       </div>
     </div>
-    <div class="details-card">
-      <h3>Media i pliki</h3>
+    <div class="details-card" id="detailsMediaSection">
+      <div class="details-section-label">Media i pliki</div>
+      <p class="details-section-note">${mediaCount ? `Ostatnie ${Math.min(mediaCount, 6)} elementow z rozmowy.` : "Brak multimediow w tej rozmowie."}</p>
       <div class="action-list">
         ${media.length ? media.slice(-6).reverse().map((message) => `<button class="list-button" data-download-file="${message.id}"><i data-lucide="file"></i>${escapeHtml(message.attachment_name || message.body || "Plik")}</button>`).join("") : "<p class='preview'>Brak plikow w tej rozmowie.</p>"}
       </div>
     </div>
     <div class="details-card">
-      <h3>Prywatnosc i bezpieczenstwo</h3>
+      <div class="details-section-label">Prywatnosc i bezpieczenstwo</div>
       <div class="action-list">
         <button class="list-button" id="setDisappearing"><i data-lucide="timer"></i>Znikajace wiadomosci</button>
         <button class="list-button" id="muteConversation"><i data-lucide="bell-off"></i>Wycisz na 8 godzin</button>
@@ -2314,6 +2334,11 @@ function renderDetails() {
       </div>
     </div>
   `;
+  document.getElementById("detailsJumpMedia")?.addEventListener("click", () => {
+    detailsPanel.querySelector("#detailsMediaSection")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  document.getElementById("detailsMuteConversationQuick")?.addEventListener("click", () => muteConversation().catch((error) => toast(error.message)));
+  document.getElementById("detailsOpenThemeQuick")?.addEventListener("click", openThemeModal);
   document.getElementById("openTheme").addEventListener("click", openThemeModal);
   document.getElementById("openEmojiPicker").addEventListener("click", () => openPicker("emoji"));
   document.getElementById("togglePinConversation").addEventListener("click", () => togglePinConversation().catch((error) => toast(error.message)));
