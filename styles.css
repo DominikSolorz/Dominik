@@ -2172,17 +2172,42 @@ body.app-active .reaction-pill {
     font-size: 12px;
   }
 
+  .auth-screen {
+    padding: 0;
+    background: #05070c;
+  }
+
   .auth-card {
-    padding: 18px;
-    border-radius: 24px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 0 0 28px;
+    border-radius: 0;
+    border: 0;
+    background: #05070c;
+    box-shadow: none;
   }
 
-  .auth-showcase h1 {
-    font-size: 32px;
+  .auth-layout {
+    gap: 0;
   }
 
-  .auth-feature-grid {
-    grid-template-columns: 1fr;
+  .auth-showcase {
+    gap: 14px;
+  }
+
+  .auth-brand-row,
+  .auth-step-row,
+  .auth-feature-grid,
+  .auth-lead {
+    display: none;
+  }
+
+  .auth-preview {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .auth-preview-desktop {
@@ -2192,7 +2217,20 @@ body.app-active .reaction-pill {
   .auth-preview-phone {
     display: grid;
     min-height: 0;
-    border-radius: 24px;
+    border-radius: 0 0 26px 26px;
+    padding: 14px 14px 20px;
+  }
+
+  .auth-preview-phone-stories {
+    grid-auto-columns: 70px;
+    gap: 14px;
+  }
+
+  .auth-panel {
+    margin: 10px 14px 0;
+    padding: 20px 18px 24px;
+    border-radius: 28px;
+    background: rgba(11, 14, 21, 0.96);
   }
 
   .search-box {
