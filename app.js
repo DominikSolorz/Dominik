@@ -245,6 +245,7 @@ const infoDocuments = {
         heading: "Co zrobic teraz",
         bullets: [
           "odczekaj chwile i nie klikaj rejestracji ani resend kilka razy pod rzad",
+          "domyslna wysylka testowa Supabase potrafi zatrzymac sie nawet przy 2 mailach na godzine",
           "sprawdz w Supabase: Authentication -> Providers -> Email",
           "do prywatnych testow mozesz tymczasowo ustawic Confirm email na OFF",
           "po zmianie odswiez strone i sprobuj utworzyc konto jeszcze raz"
@@ -891,7 +892,7 @@ function humanizeAuthError(error) {
     return "Numer telefonu powinien miec format miedzynarodowy, np. +48795731886.";
   }
   if (lower.includes("invalid login credentials")) return "Nieprawidlowy email albo haslo.";
-  if (lower.includes("email not confirmed")) return "Konto nie jest jeszcze potwierdzone. Sprawdz poczte i kliknij link potwierdzajacy.";
+  if (lower.includes("email not confirmed")) return "Konto nie jest jeszcze potwierdzone. Sprawdz poczte: jesli mail ma link, kliknij link, a jesli ma 6-cyfrowy kod, wpisz go w panelu logowania.";
   if (lower.includes("email_address_invalid") || lower.includes("email address")) return "Ten adres email zostal odrzucony. Uzyj prawdziwego adresu email, np. Gmail albo Outlook.";
   if (lower.includes("password")) return "Haslo musi miec minimum 6 znakow.";
   return message;
