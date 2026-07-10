@@ -1601,6 +1601,54 @@ h3 {
   gap: 8px;
 }
 
+.auth-preview-phone-stories {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 66px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.auth-preview-phone-story {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  position: relative;
+  color: #d5dbe4;
+  font-size: 11px;
+}
+
+.auth-preview-phone-story-avatar {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1682ff, #61b2ff);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.auth-preview-phone-story-avatar.accent {
+  background: linear-gradient(135deg, #ff4f88, #ff9560);
+}
+
+.auth-preview-phone-story-create .auth-preview-phone-story-avatar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.auth-preview-phone-status {
+  width: 12px;
+  height: 12px;
+  position: absolute;
+  right: 7px;
+  top: 42px;
+  border-radius: 50%;
+  background: #31a24c;
+  border: 2px solid #11161d;
+}
+
 .auth-preview-phone-row {
   gap: 10px;
   padding: 6px 0;
