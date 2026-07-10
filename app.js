@@ -675,6 +675,54 @@ function renderConnectionStatus() {
   if (authOfflineBanner) {
     authOfflineBanner.classList.toggle("hidden", !state.isOffline);
   }
+  renderRuntimeStatus();
+}
+
+function renderRuntimeStatus() {
+  if (!runtimeSiteValue) return;
+
+  const buildText = runtimeHealth?.builtAt ? `Ostatni build: ${formatTime(runtimeHealth.builtAt)}.` : "Czekam na dane o ostatnim buildzie.";
+  runtimeSiteValue.textContent = "GitHub Pages 24/7";
+  runtimeSiteNote.textContent = `${buildText} Domena prowadzi do publicznej publikacji strony.`;
+
+  runtimeDataValue.textContent = hasBackend ? "Supabase Auth + Database" : "Backend niepodpiety";
+  runtimeDataNote.textContent = hasBackend
+    ? "Tutaj wchodza logowanie, wiadomosci, pliki, Realtime i prywatne dane konta."
+    : "Brakuje danych konfiguracyjnych Supabase, wiec logowanie i rozmowy nie rusza.";
+
+  if (runtimeHealth?.apkReady) {
+    runtimeApkValue.textContent = "APK gotowe";
+    runtimeApkNote.textContent = `Publiczna paczka Android jest wystawiona pod adresem ${runtimeHealth.apkUrl || apkUrl || "linktalk.pl/downloads/linktalk-debug.apk"}.`;
+  } else if (apkUrl) {
+    runtimeApkValue.textContent = "APK pod tym samym adresem";
+    runtimeApkNote.textContent = `Link do Androida jest powiazany z ta sama publikacja strony: ${apkUrl}.`;
+  } else {
+    runtimeApkValue.textContent = "APK jeszcze niedopiete";
+    runtimeApkNote.textContent = "Strona juz dziala, ale paczka Android wymaga jeszcze kolejnego pełnego builda.";
+  }
+
+  runtimeOfflineValue.textContent = state.isOffline ? "To urzadzenie jest offline" : "Service worker i cache";
+  runtimeOfflineNote.textContent = state.isOffline
+    ? "Mozesz dalej czytac ostatnio zapisane rozmowy i zapisywac nowe teksty lokalnie do wyslania pozniej."
+    : (state.lastSyncAt
+      ? `Ostatnia synchronizacja rozmow: ${formatTime(state.lastSyncAt)}. Po pierwszym zaladowaniu ostatnie czaty zostaja lokalnie.`
+      : "Po pierwszym zaladowaniu ostatnie czaty i kolejka wiadomosci zostaja lokalnie w przegladarce.");
+}
+
+async function loadRuntimeHealthStatus() {
+  if (!runtimeSiteValue) return;
+  try {
+    const baseUrl = publicAppUrl || window.location.href;
+    const url = new URL("health.json", baseUrl);
+    url.searchParams.set("fresh", BUILD_VERSION.replace(/[^\d]/g, ""));
+    url.searchParams.set("t", Date.now().toString());
+    const response = await fetch(url.toString(), { cache: "no-store" });
+    if (!response.ok) throw new Error(`Health HTTP ${response.status}`);
+    runtimeHealth = await response.json();
+  } catch {
+    runtimeHealth = null;
+  }
+  renderRuntimeStatus();
 }
 
 function apkDownloadMarkup() {
