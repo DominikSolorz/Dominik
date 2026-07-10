@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0d10" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="linktalk-build" content="2026.07.10-09" />
+    <meta name="linktalk-build" content="2026.07.10-10" />
     <title>LinkTalk</title>
-    <link rel="manifest" href="manifest.webmanifest?v=20260710-09" />
-    <link rel="stylesheet" href="styles.css?v=20260710-09" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260710-10" />
+    <link rel="stylesheet" href="styles.css?v=20260710-10" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="config.js?v=20260710-09"></script>
+    <script src="config.js?v=20260710-10"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -443,17 +443,45 @@
                   <input id="authFullName" type="text" autocomplete="name" maxlength="240" placeholder="Np. Ewelina Kowalska" />
                 </label>
                 <label class="field">
+                  Nazwa profilu
+                  <input id="authUsername" type="text" autocomplete="username" minlength="3" maxlength="24" placeholder="Np. ewelina" />
+                  <span class="field-note">Od 3 do 24 znakow: litery, cyfry, kropka lub podkreslenie.</span>
+                </label>
+                <label class="field">
                   Numer telefonu
                   <input id="authPhone" type="tel" autocomplete="tel" maxlength="20" placeholder="Np. +48 795 731 886" />
                 </label>
+                <label class="field">
+                  Data urodzenia
+                  <input id="authBirthDate" type="date" autocomplete="bday" />
+                </label>
+                <label class="field">
+                  Powtorz haslo
+                  <div class="password-field">
+                    <input id="authPasswordConfirm" type="password" autocomplete="new-password" minlength="8" />
+                    <button class="password-toggle" id="toggleAuthPasswordConfirmButton" type="button" aria-label="Pokaz powtorzone haslo" title="Pokaz powtorzone haslo">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </label>
+                <label class="field field-span-2">
+                  Zdjecie profilowe
+                  <div class="registration-avatar-field">
+                    <span class="registration-avatar-preview" id="authAvatarPreview" aria-hidden="true">LT</span>
+                    <span class="registration-avatar-copy">
+                      <input id="authAvatar" type="file" accept="image/jpeg,image/png,image/webp" />
+                      <small>JPG, PNG lub WebP. Zdjecie zostanie zmniejszone przed wyslaniem.</small>
+                    </span>
+                  </div>
+                </label>
                 <label class="checkbox-field">
                   <input id="authLegalConsent" type="checkbox" />
-                  <span>Akceptuje regulamin i polityke prywatnosci oraz zgadzam sie na zapis danych potrzebnych do obslugi konta.</span>
+                  <span>Akceptuje regulamin, polityke prywatnosci i zasady spolecznosci oraz zgadzam sie na zapis danych potrzebnych do obslugi konta.</span>
                 </label>
                 <div class="auth-verification-hint">
                   <div class="auth-verification-card">
-                    <strong>Email od Was</strong>
-                    <span>Klient dostaje mail od LinkTalk z linkiem potwierdzajacym albo 6-cyfrowym kodem, zaleznie od szablonu wysylki.</span>
+                    <strong>Email od Zespolu LinkTalk</strong>
+                    <span>Wiadomosc potwierdzajaca przychodzi z firmowego adresu goldservicepoland@linktalk.pl po dopieciu SMTP OVH.</span>
                   </div>
                   <div class="auth-verification-card">
                     <strong>Telefon</strong>
@@ -494,7 +522,7 @@
               <button class="inline-link-button" id="showPrivacyAuthButton" type="button">Polityka prywatnosci</button>
             </div>
             <div class="auth-support-row">
-              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-09</span>
+              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-10</span>
               <button class="inline-link-button subtle" id="refreshAppButton" type="button">Wymus odswiezenie</button>
             </div>
             <div class="setup-warning hidden" id="setupWarning">
@@ -603,8 +631,8 @@
     </dialog>
 
     <script>
-      window.LINKTALK_BUILD = "2026.07.10-09";
+      window.LINKTALK_BUILD = "2026.07.10-10";
     </script>
-    <script type="module" src="app.js?v=20260710-09"></script>
+    <script type="module" src="app.js?v=20260710-10"></script>
   </body>
 </html>

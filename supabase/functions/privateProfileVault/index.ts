@@ -83,6 +83,12 @@ function normalizePrivateField(field: string, value: unknown) {
   if (field === "phone") {
     return trimmed.replace(/[^\d+()\s-]/g, "").slice(0, 40) || null;
   }
+  if (field === "birth_date") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) throw new Error("Nieprawidlowa data urodzenia.");
+    const parsed = new Date(`${trimmed}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime()) || parsed > new Date()) throw new Error("Nieprawidlowa data urodzenia.");
+    return trimmed;
+  }
   return trimmed.slice(0, 240) || null;
 }
 
@@ -97,6 +103,7 @@ function normalizeProfileRecord(record: Record<string, unknown> = {}) {
   return {
     full_name: normalizePrivateField("full_name", record.full_name),
     phone: normalizePrivateField("phone", record.phone),
+    birth_date: normalizePrivateField("birth_date", record.birth_date),
     home_address: normalizePrivateField("home_address", record.home_address),
     pesel: normalizePrivateField("pesel", record.pesel),
     data_consent_at: record.data_consent_at ? String(record.data_consent_at) : null
@@ -181,7 +188,7 @@ Deno.serve(async (request) => {
 
     const { data: legacyRow, error: legacyError } = await serviceClient
       .from("profile_private")
-      .select("full_name, phone, home_address, pesel, data_consent_at, created_at, updated_at")
+      .select("full_name, phone, birth_date, home_address, pesel, data_consent_at, created_at, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
     if (legacyError) return json({ error: legacyError.message }, 500);
@@ -205,6 +212,7 @@ Deno.serve(async (request) => {
           user_id: userId,
           full_name: null,
           phone: null,
+          birth_date: null,
           home_address: null,
           pesel: null,
           data_consent_at: legacyProfile.data_consent_at
@@ -264,6 +272,7 @@ Deno.serve(async (request) => {
         user_id: userId,
         full_name: null,
         phone: null,
+        birth_date: null,
         home_address: null,
         pesel: null,
         data_consent_at: dataConsentAt

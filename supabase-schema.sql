@@ -26,12 +26,16 @@ create table if not exists public.profile_private (
   user_id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
   phone text,
+  birth_date date,
   home_address text,
   pesel text,
   data_consent_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.profile_private
+add column if not exists birth_date date;
 
 create table if not exists public.profile_private_vault (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -168,6 +172,19 @@ set public = false,
     file_size_limit = excluded.file_size_limit,
     allowed_mime_types = excluded.allowed_mime_types;
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'avatars',
+  'avatars',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set public = true,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
@@ -281,8 +298,8 @@ grant select on public.profiles to authenticated;
 grant insert (id, display_name, username, avatar_url, status_text, is_online, read_receipts_enabled, auto_transcribe_voice) on public.profiles to authenticated;
 grant update (display_name, username, avatar_url, status_text, is_online, read_receipts_enabled, auto_transcribe_voice, updated_at) on public.profiles to authenticated;
 grant select on public.profile_private to authenticated;
-grant insert (user_id, full_name, phone, home_address, pesel, data_consent_at) on public.profile_private to authenticated;
-grant update (full_name, phone, home_address, pesel, data_consent_at, updated_at) on public.profile_private to authenticated;
+grant insert (user_id, full_name, phone, birth_date, home_address, pesel, data_consent_at) on public.profile_private to authenticated;
+grant update (full_name, phone, birth_date, home_address, pesel, data_consent_at, updated_at) on public.profile_private to authenticated;
 revoke all on public.profile_private_vault from public, anon, authenticated;
 grant select, insert, update on public.legal_acceptances to authenticated;
 grant select, insert, update, delete on public.conversations to authenticated;
@@ -293,6 +310,40 @@ grant select, insert, update, delete on public.message_reads to authenticated;
 grant select, insert, update, delete on public.friendships to authenticated;
 grant select, insert, update, delete on public.blocks to authenticated;
 grant select, insert, update on public.reports to authenticated;
+
+drop policy if exists "avatars_select_public" on storage.objects;
+drop policy if exists "avatars_select_own" on storage.objects;
+create policy "avatars_select_own"
+on storage.objects for select
+to authenticated
+using (bucket_id = 'avatars' and owner = (select auth.uid()));
+
+drop policy if exists "avatars_insert_own" on storage.objects;
+create policy "avatars_insert_own"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'avatars'
+  and owner = (select auth.uid())
+  and (storage.foldername(name))[1] = (select auth.uid())::text
+);
+
+drop policy if exists "avatars_update_own" on storage.objects;
+create policy "avatars_update_own"
+on storage.objects for update
+to authenticated
+using (bucket_id = 'avatars' and owner = (select auth.uid()))
+with check (
+  bucket_id = 'avatars'
+  and owner = (select auth.uid())
+  and (storage.foldername(name))[1] = (select auth.uid())::text
+);
+
+drop policy if exists "avatars_delete_own" on storage.objects;
+create policy "avatars_delete_own"
+on storage.objects for delete
+to authenticated
+using (bucket_id = 'avatars' and owner = (select auth.uid()));
 
 drop policy if exists "chat_files_select_member" on storage.objects;
 create policy "chat_files_select_member"

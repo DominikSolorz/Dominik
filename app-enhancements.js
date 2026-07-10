@@ -43,7 +43,7 @@ const docs = {
         bullets: [
           "email i haslo w Supabase Auth",
           "publiczny profil czatu: nazwa, username, status, avatar i ustawienia rozmow",
-          "profil prywatny: imie i nazwisko, telefon, adres zamieszkania, PESEL",
+          "profil prywatny: imie i nazwisko, telefon i data urodzenia",
           "wiadomosci, reakcje, pliki, raporty i blokady potrzebne do dzialania komunikatora"
         ]
       },
@@ -413,6 +413,12 @@ function normalizePrivateField(field, value) {
   if (field === "phone") {
     return trimmed.replace(/[^\d+()\s-]/g, "").slice(0, 40);
   }
+  if (field === "birth_date") {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) throw new Error("Wybierz prawidlowa date urodzenia.");
+    const parsed = new Date(`${trimmed}T00:00:00Z`);
+    if (Number.isNaN(parsed.getTime()) || parsed > new Date()) throw new Error("Wybierz prawidlowa date urodzenia.");
+    return trimmed;
+  }
   return trimmed.slice(0, 240);
 }
 
@@ -458,7 +464,7 @@ function ensureSettingsExtras() {
     banner.dataset.settingsBanner = "profile";
     banner.innerHTML = `
       <strong>Prywatne dane i testy</strong>
-      <p>Dane osobowe sa trzymane osobno w profile_private. Przy testach rejestracji z limitem 429 warto tymczasowo wylaczyc Confirm email w Supabase.</p>
+      <p>Telefon i data urodzenia sa oddzielone od publicznego profilu czatu. Potwierdzenie emaila oraz telefonu chroni dostep do konta.</p>
     `;
     content.appendChild(banner);
   }
@@ -491,12 +497,8 @@ async function renderPrivateProfileForm() {
           <input type="text" name="full_name" value="${escapeHtml(profile.full_name || "")}" />
         </label>
         <label class="field">
-          PESEL
-          <input type="text" name="pesel" inputmode="numeric" maxlength="11" value="${escapeHtml(profile.pesel || "")}" />
-        </label>
-        <label class="field field-span-2">
-          Adres zamieszkania
-          <textarea name="home_address">${escapeHtml(profile.home_address || "")}</textarea>
+          Data urodzenia
+          <input type="date" name="birth_date" max="${new Date().toISOString().slice(0, 10)}" value="${escapeHtml(profile.birth_date || "")}" />
         </label>
         <div class="field-note field-span-2">${escapeHtml(formatSavedAt(profile.data_consent_at))}</div>
         <div class="settings-inline field-span-2">
@@ -515,8 +517,7 @@ async function renderPrivateProfileForm() {
         const patch = {
           full_name: normalizePrivateField("full_name", formData.get("full_name")) || null,
           phone: normalizePrivateField("phone", formData.get("phone")) || null,
-          home_address: normalizePrivateField("home_address", formData.get("home_address")) || null,
-          pesel: normalizePrivateField("pesel", formData.get("pesel")) || null
+          birth_date: normalizePrivateField("birth_date", formData.get("birth_date")) || null
         };
         if (Object.values(patch).some(Boolean) && !profile.data_consent_at) {
           patch.data_consent_at = new Date().toISOString();

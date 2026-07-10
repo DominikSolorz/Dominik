@@ -10,12 +10,13 @@ const STORAGE_BUCKET = "chat-files";
 const SIGNED_URL_SECONDS = 600;
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const MAX_VOICE_SECONDS = 300;
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
 const OFFLINE_CACHE_VERSION = 1;
 const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-09");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-10");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -57,7 +58,8 @@ const state = {
   isOffline: typeof navigator !== "undefined" ? !navigator.onLine : false,
   isSyncingQueue: false,
   lastSyncAt: null,
-  pendingPhoneVerification: ""
+  pendingPhoneVerification: "",
+  pendingRegistrationAvatar: ""
 };
 
 const themes = [
@@ -102,8 +104,15 @@ const authInstallButton = document.getElementById("authInstallButton");
 const authLoginModeButton = document.getElementById("authLoginModeButton");
 const authRegisterModeButton = document.getElementById("authRegisterModeButton");
 const authRegisterFields = document.getElementById("authRegisterFields");
+const authEmail = document.getElementById("authEmail");
 const authFullName = document.getElementById("authFullName");
+const authUsername = document.getElementById("authUsername");
 const authPhone = document.getElementById("authPhone");
+const authBirthDate = document.getElementById("authBirthDate");
+const authPasswordConfirm = document.getElementById("authPasswordConfirm");
+const toggleAuthPasswordConfirmButton = document.getElementById("toggleAuthPasswordConfirmButton");
+const authAvatar = document.getElementById("authAvatar");
+const authAvatarPreview = document.getElementById("authAvatarPreview");
 const authLegalConsent = document.getElementById("authLegalConsent");
 const authEmailOtpPanel = document.getElementById("authEmailOtpPanel");
 const authEmailOtp = document.getElementById("authEmailOtp");
@@ -178,7 +187,7 @@ const infoDocuments = {
       {
         heading: "Postanowienia ogolne",
         paragraphs: [
-          `${BRAND_NAME} jest prowadzony przez ${ADMIN_CONTACT.controller}, ${ADMIN_CONTACT.address}.`,
+          `${BRAND_NAME} jest prowadzony przez ${ADMIN_CONTACT.controller}. Kontakt: ${ADMIN_CONTACT.email}.`,
           "Aplikacja sluzy do prywatnej komunikacji, przesylania tresci multimedialnych i synchronizacji rozmow miedzy urzadzeniami uzytkownika."
         ]
       },
@@ -206,7 +215,7 @@ const infoDocuments = {
       {
         heading: "Kontakt i reklamacje",
         paragraphs: [
-          `Kontakt z administratorem: ${ADMIN_CONTACT.email}, tel. ${ADMIN_CONTACT.phone}, e-Doreczenia: ${ADMIN_CONTACT.eDelivery}, ePUAP: ${ADMIN_CONTACT.epuap}.`,
+          `Kontakt z administratorem: ${ADMIN_CONTACT.email}. Formalny adres e-Doreczen: ${ADMIN_CONTACT.eDelivery}.`,
           "W sprawach dotyczacych konta, prywatnosci, usuniecia danych albo naruszen bezpieczenstwa nalezy kontaktowac sie bezposrednio z administratorem."
         ]
       }
@@ -219,8 +228,8 @@ const infoDocuments = {
       {
         heading: "Administrator danych",
         paragraphs: [
-          `${ADMIN_CONTACT.controller}, ${ADMIN_CONTACT.address}.`,
-          `Kontakt: ${ADMIN_CONTACT.email}, tel. ${ADMIN_CONTACT.phone}, e-Doreczenia: ${ADMIN_CONTACT.eDelivery}, ePUAP: ${ADMIN_CONTACT.epuap}.`
+          `${ADMIN_CONTACT.controller}.`,
+          `Kontakt: ${ADMIN_CONTACT.email}. Formalny adres e-Doreczen: ${ADMIN_CONTACT.eDelivery}.`
         ]
       },
       {
@@ -228,7 +237,7 @@ const infoDocuments = {
         bullets: [
           "dane konta w Supabase Auth: email, haslo, znaczniki potwierdzenia emaila i telefonu",
           "publiczny profil czatu: nazwa, username, status, avatar, ustawienia rozmow i ustawienia prywatnosci",
-          "profil prywatny: imie i nazwisko, numer telefonu, adres zamieszkania, PESEL, znaczniki zgody",
+          "profil prywatny: imie i nazwisko, numer telefonu, data urodzenia i znaczniki zgody",
           "wiadomosci, reakcje, pliki, raporty, blokady, logi techniczne i metadane bezpieczenstwa",
           "nagrania audio przekazane do transkrypcji tylko wtedy, gdy uzytkownik uruchomi taka funkcje"
         ]
@@ -237,20 +246,20 @@ const infoDocuments = {
         heading: "Cele i podstawa przetwarzania",
         paragraphs: [
           "Dane sa przetwarzane w celu zalozenia i utrzymania konta, dostarczenia komunikatora, wysylki wiadomosci, obslugi kontaktow, ochrony przed naduzyciami oraz realizacji zadan administracyjnych i bezpieczenstwa.",
-          "Dane dodatkowe, takie jak telefon, adres czy PESEL, sa zapisywane na prosbe uzytkownika lub gdy sa potrzebne do obslugi konta, weryfikacji i zgodnosci organizacyjnej."
+          "Numer telefonu i data urodzenia sa zapisywane w celu obslugi konta, weryfikacji i bezpieczenstwa komunikatora."
         ]
       },
       {
         heading: "Odbiorcy danych i narzedzia",
         paragraphs: [
           "Dane moga byc przetwarzane przez zaufanych dostawcow infrastruktury: Supabase, hosting WWW/VPS, dostawce SMTP do maili, dostawce SMS do kodow oraz OpenAI do transkrypcji glosu, jesli uzytkownik wlaczy te funkcje.",
-          "Dane prywatne nie sa publikowane w publicznym profilu rozmow. Telefon, adres i PESEL sa odczytywane przez aplikacje przez funkcje serwerowa, a nie bezposrednio z publicznej tabeli czatu."
+          "Dane prywatne nie sa publikowane w publicznym profilu rozmow. Telefon i data urodzenia sa odczytywane przez aplikacje przez funkcje serwerowa, a nie bezposrednio z publicznej tabeli czatu."
         ]
       },
       {
         heading: "Okres przechowywania i prawa",
         paragraphs: [
-          "Dane sa przechowywane tak dlugo, jak jest to potrzebne do utrzymania konta, historii rozmow i bezpieczenstwa uslugi, chyba ze uzytkownik poprosi o ich usuniecie lub konto zostanie zamkniete.",
+          "Wiadomosci sa przechowywane do czasu ich usuniecia przez uzytkownika. Pozostale dane sa przechowywane tak dlugo, jak jest to potrzebne do utrzymania konta i bezpieczenstwa uslugi, chyba ze uzytkownik poprosi o ich usuniecie lub konto zostanie zamkniete.",
           "Uzytkownik ma prawo dostepu do swoich danych, ich poprawienia, ograniczenia przetwarzania, usuniecia oraz wniesienia skargi do organu nadzorczego. Wniosek mozna zlozyc na dane kontaktowe administratora."
         ]
       }
@@ -320,6 +329,80 @@ function normalizePhoneInput(value = "") {
 
 function isValidPhoneNumber(value = "") {
   return /^\+[1-9]\d{7,14}$/.test(value);
+}
+
+function normalizeUsername(value = "") {
+  return String(value || "").trim().replace(/^@+/, "").toLowerCase();
+}
+
+function isValidUsername(value = "") {
+  return /^[a-z0-9][a-z0-9._]{2,23}$/.test(value);
+}
+
+function normalizeBirthDate(value = "") {
+  const raw = String(value || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    throw new Error("Wybierz prawidlowa date urodzenia.");
+  }
+  const [year, month, day] = raw.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  const today = new Date();
+  if (
+    parsed.getUTCFullYear() !== year
+    || parsed.getUTCMonth() !== month - 1
+    || parsed.getUTCDate() !== day
+    || year < 1900
+    || parsed > today
+  ) {
+    throw new Error("Wybierz prawidlowa date urodzenia.");
+  }
+  return raw;
+}
+
+function pendingAvatarStorageKey(email = state.user?.email || "") {
+  const normalized = String(email || "").trim().toLowerCase();
+  return normalized ? `linktalk-pending-avatar:${normalized}` : "";
+}
+
+function resizeAvatarFile(file) {
+  if (!file) return Promise.resolve("");
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    return Promise.reject(new Error("Zdjecie profilowe musi byc plikiem JPG, PNG albo WebP."));
+  }
+  if (file.size > MAX_AVATAR_SIZE) {
+    return Promise.reject(new Error("Zdjecie profilowe moze miec maksymalnie 5 MB."));
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Nie udalo sie odczytac zdjecia profilowego."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("Wybrany plik nie jest prawidlowym zdjeciem."));
+      image.onload = () => {
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+        const sourceX = Math.max(0, (image.naturalWidth - side) / 2);
+        const sourceY = Math.max(0, (image.naturalHeight - side) / 2);
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 320;
+        const context = canvas.getContext("2d");
+        context.drawImage(image, sourceX, sourceY, side, side, 0, 0, 320, 320);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      image.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function prepareRegistrationAvatar(file) {
+  const dataUrl = await resizeAvatarFile(file);
+  state.pendingRegistrationAvatar = dataUrl;
+  if (authAvatarPreview) {
+    authAvatarPreview.textContent = "";
+    authAvatarPreview.style.backgroundImage = `url("${dataUrl}")`;
+  }
 }
 
 function maskPhoneNumber(value = "") {
@@ -416,6 +499,7 @@ function emptyPrivateProfile() {
   return {
     full_name: "",
     phone: "",
+    birth_date: "",
     home_address: "",
     pesel: "",
     data_consent_at: null,
@@ -429,6 +513,7 @@ function normalizePrivateProfileRecord(profile = {}) {
     ...profile,
     full_name: profile?.full_name || "",
     phone: profile?.phone || "",
+    birth_date: profile?.birth_date || "",
     home_address: profile?.home_address || "",
     pesel: profile?.pesel || "",
     data_consent_at: profile?.data_consent_at || null,
@@ -438,7 +523,7 @@ function normalizePrivateProfileRecord(profile = {}) {
 
 function hasSavedPrivateProfile(profile = state.privateProfile) {
   if (!profile) return false;
-  return Boolean(profile.full_name || profile.phone || profile.home_address || profile.pesel || profile.data_consent_at);
+  return Boolean(profile.full_name || profile.phone || profile.birth_date || profile.data_consent_at);
 }
 
 function privateProfileModeLabel(mode = state.privateProfileMode) {
@@ -845,6 +930,8 @@ function setAuthPanelOpen(isOpen = false) {
   authPanelShell?.classList.toggle("hidden", !authPanelOpen);
   authScreen?.classList.toggle("auth-panel-open", authPanelOpen);
   if (authPanelOpen) {
+    const panel = authPanelShell?.querySelector(".auth-panel");
+    if (panel) panel.scrollTop = 0;
     window.setTimeout(() => document.getElementById("authEmail")?.focus(), 40);
   }
 }
@@ -857,6 +944,17 @@ function syncPasswordToggleIcon() {
     : '<i data-lucide="eye"></i>';
   toggleAuthPasswordButton.setAttribute("aria-label", isVisible ? "Ukryj haslo" : "Pokaz haslo");
   toggleAuthPasswordButton.title = isVisible ? "Ukryj haslo" : "Pokaz haslo";
+  refreshIcons();
+}
+
+function syncPasswordConfirmToggleIcon() {
+  if (!toggleAuthPasswordConfirmButton || !authPasswordConfirm) return;
+  const isVisible = authPasswordConfirm.type === "text";
+  toggleAuthPasswordConfirmButton.innerHTML = isVisible
+    ? '<i data-lucide="eye-off"></i>'
+    : '<i data-lucide="eye"></i>';
+  toggleAuthPasswordConfirmButton.setAttribute("aria-label", isVisible ? "Ukryj powtorzone haslo" : "Pokaz powtorzone haslo");
+  toggleAuthPasswordConfirmButton.title = isVisible ? "Ukryj powtorzone haslo" : "Pokaz powtorzone haslo";
   refreshIcons();
 }
 
@@ -902,10 +1000,20 @@ function setAuthMode(mode = "login") {
   }
   if (authPassword) {
     authPassword.autocomplete = authMode === "login" ? "current-password" : "new-password";
-    authPassword.placeholder = authMode === "login" ? "Wpisz haslo albo wybierz kod z maila" : "Minimum 6 znakow";
+    authPassword.placeholder = authMode === "login" ? "Wpisz haslo albo wybierz kod z maila" : "Minimum 8 znakow";
+    authPassword.minLength = authMode === "login" ? 6 : 8;
     authPassword.type = "password";
   }
+  if (authPasswordConfirm) {
+    authPasswordConfirm.required = authMode === "register";
+    authPasswordConfirm.type = "password";
+    if (authMode === "login") authPasswordConfirm.value = "";
+  }
+  [authFullName, authUsername, authPhone, authBirthDate, authAvatar, authLegalConsent].forEach((field) => {
+    if (field) field.required = authMode === "register";
+  });
   syncPasswordToggleIcon();
+  syncPasswordConfirmToggleIcon();
 }
 
 function setAuthBusy(isBusy, message = "") {
@@ -1539,6 +1647,9 @@ async function bootstrapUserWithOfflineSupport() {
 async function bootstrapUser() {
   await loadCurrentUser();
   await syncProfileFromAuthMetadata();
+  await syncPendingRegistrationAvatar().catch((error) => {
+    console.warn("Nie udalo sie jeszcze zapisac zdjecia profilowego.", error);
+  });
   await syncLegalAcceptances();
   if (state.profile?.is_banned) {
     showAuth();
@@ -1577,6 +1688,7 @@ function clearData() {
   state.cachedReadsByConversation = {};
   state.lastSyncAt = null;
   state.pendingPhoneVerification = "";
+  state.pendingRegistrationAvatar = "";
   state.isSyncingQueue = false;
   state.signedUrls.clear();
   state.subscriptions.forEach((channel) => supabase.removeChannel(channel));
@@ -1600,12 +1712,23 @@ async function loadCurrentUser() {
 
   const fullName = normalizePrivateField("full_name", String(currentUserMetadata().full_name || ""));
   const emailName = registrationFallbackName();
+  const requestedUsername = normalizeUsername(currentUserMetadata().preferred_username || "");
+  const username = isValidUsername(requestedUsername)
+    ? requestedUsername
+    : `${emailName}-${state.user.id.slice(0, 6)}`;
   const newProfile = {
     id: state.user.id,
     display_name: fullName || emailName,
-    username: `${emailName}-${state.user.id.slice(0, 6)}`
+    username
   };
-  const { data, error: insertError } = await supabase.from("profiles").insert(newProfile).select("*").single();
+  let { data, error: insertError } = await supabase.from("profiles").insert(newProfile).select("*").single();
+  if (insertError?.code === "23505" && username === requestedUsername) {
+    const fallbackProfile = {
+      ...newProfile,
+      username: `${requestedUsername.slice(0, 16)}-${state.user.id.slice(0, 6)}`
+    };
+    ({ data, error: insertError } = await supabase.from("profiles").insert(fallbackProfile).select("*").single());
+  }
   if (insertError) throw insertError;
   state.profile = data;
   state.profiles[data.id] = data;
@@ -1614,19 +1737,65 @@ async function loadCurrentUser() {
 async function syncProfileFromAuthMetadata() {
   if (!state.user || !state.profile) return;
   const fullName = normalizePrivateField("full_name", String(currentUserMetadata().full_name || ""));
-  if (!fullName) return;
+  const preferredUsername = normalizeUsername(currentUserMetadata().preferred_username || "");
   const fallbackName = registrationFallbackName();
   const isGeneric = [fallbackName, "Nowy uzytkownik"].includes(state.profile.display_name || "");
-  if (!isGeneric || state.profile.display_name === fullName) return;
+  const patch = {};
+  if (fullName && isGeneric && state.profile.display_name !== fullName) {
+    patch.display_name = fullName;
+  }
+  if (
+    isValidUsername(preferredUsername)
+    && state.profile.username !== preferredUsername
+    && (state.profile.username || "").includes(state.user.id.slice(0, 6))
+  ) {
+    patch.username = preferredUsername;
+  }
+  if (!Object.keys(patch).length) return;
   const { data, error } = await supabase
     .from("profiles")
-    .update({ display_name: fullName })
+    .update(patch)
     .eq("id", state.user.id)
     .select("*")
     .single();
   if (error) throw error;
   state.profile = data;
   state.profiles[data.id] = data;
+}
+
+async function syncPendingRegistrationAvatar() {
+  if (!state.user || !state.profile) return;
+  const storageKey = pendingAvatarStorageKey(state.user.email || "");
+  if (!storageKey) return;
+  const dataUrl = localStorage.getItem(storageKey);
+  if (!dataUrl) return;
+
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  const avatarPath = `${state.user.id}/avatar.jpg`;
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(avatarPath, blob, {
+      contentType: "image/jpeg",
+      cacheControl: "3600",
+      upsert: true
+    });
+  if (uploadError) throw uploadError;
+
+  const { data: publicData } = supabase.storage.from("avatars").getPublicUrl(avatarPath);
+  const avatarUrl = publicData?.publicUrl || "";
+  if (!avatarUrl) throw new Error("Nie udalo sie utworzyc adresu zdjecia profilowego.");
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", state.user.id)
+    .select("*")
+    .single();
+  if (profileError) throw profileError;
+  state.profile = profile;
+  state.profiles[profile.id] = profile;
+  localStorage.removeItem(storageKey);
+  state.pendingRegistrationAvatar = "";
 }
 
 async function loadPrivateProfile() {
@@ -1678,6 +1847,9 @@ async function syncPrivateProfileFromAuth() {
     patch.phone = verifiedPhone;
   } else if (!state.privateProfile?.phone && pendingPhone) {
     patch.phone = pendingPhone;
+  }
+  if (metadata.birth_date && !state.privateProfile?.birth_date) {
+    patch.birth_date = normalizeBirthDate(metadata.birth_date);
   }
   if (Object.keys(patch).length && !state.privateProfile?.data_consent_at) {
     patch.data_consent_at = metadata.terms_accepted_at || new Date().toISOString();
@@ -1941,23 +2113,35 @@ async function login(email, password) {
 
 function collectRegistrationFields() {
   const fullName = normalizePrivateField("full_name", String(authFullName?.value || ""));
+  const username = normalizeUsername(authUsername?.value || "");
   const phone = normalizePhoneInput(authPhone?.value || "");
+  const birthDate = normalizeBirthDate(authBirthDate?.value || "");
   if (!fullName) throw new Error("Przy nowym koncie wpisz imie i nazwisko.");
+  if (!isValidUsername(username)) throw new Error("Nazwa profilu musi miec od 3 do 24 znakow i moze zawierac litery, cyfry, kropke lub podkreslenie.");
   if (!phone || !isValidPhoneNumber(phone)) throw new Error("Przy nowym koncie wpisz prawidlowy numer telefonu, np. +48795731886.");
+  if ((authPassword?.value || "").length < 8) throw new Error("Nowe haslo musi miec co najmniej 8 znakow.");
+  if (authPassword?.value !== authPasswordConfirm?.value) throw new Error("Wpisane hasla nie sa takie same.");
+  if (!state.pendingRegistrationAvatar) throw new Error("Dodaj zdjecie profilowe.");
   if (!authLegalConsent?.checked) throw new Error("Aby utworzyc konto, zaakceptuj regulamin i polityke prywatnosci.");
-  return { fullName, phone };
+  return { fullName, username, phone, birthDate, avatarDataUrl: state.pendingRegistrationAvatar };
 }
 
 async function register(email, password, registrationData) {
   const acceptedAt = new Date().toISOString();
-  const { fullName, phone } = registrationData;
+  const { fullName, username, phone, birthDate, avatarDataUrl } = registrationData;
+  const avatarStorageKey = pendingAvatarStorageKey(email);
+  if (avatarStorageKey && avatarDataUrl) {
+    localStorage.setItem(avatarStorageKey, avatarDataUrl);
+  }
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         full_name: fullName,
+        preferred_username: username,
         pending_phone: phone,
+        birth_date: birthDate,
         terms_accepted_at: acceptedAt,
         privacy_accepted_at: acceptedAt,
         legal_version: LEGAL_VERSION
@@ -3141,7 +3325,7 @@ function showPrivateProfileSettings() {
       <strong>${isLegacyMode ? "Wykryto starszy zapis danych" : "Dane tylko dla Ciebie i administratora"}</strong>
       <p>${isLegacyMode
         ? "Ten rekord jest jeszcze w starszym trybie zgodnosci. Klikniecie Zapisz dane przenosi go do szyfrowanego sejfu, gdy funkcja serwerowa jest wdrozona."
-        : `Email jest brany z konta Supabase Auth. Telefon, adres i PESEL sa zapisywane po stronie serwera w szyfrowanym sejfie. Telefon: ${verificationState().phoneConfirmed ? "potwierdzony" : "mozna potwierdzic kodem SMS w sekcji Weryfikacja konta"}.`}</p>
+        : `Email jest brany z konta Supabase Auth. Telefon i data urodzenia sa zapisywane po stronie serwera w szyfrowanym sejfie. Telefon: ${verificationState().phoneConfirmed ? "potwierdzony" : "mozna potwierdzic kodem SMS w sekcji Weryfikacja konta"}.`}</p>
     </div>
     <form class="profile-form-grid" id="privateProfileForm">
       <label class="field">
@@ -3156,14 +3340,9 @@ function showPrivateProfileSettings() {
         Numer telefonu
         <input name="phone" type="tel" maxlength="40" value="${escapeHtml(details.phone || "")}" placeholder="Np. +48 600 000 000" />
       </label>
-      <label class="field field-span-2">
-        Adres zamieszkania
-        <textarea name="home_address" rows="3" maxlength="240" placeholder="Ulica, numer, kod pocztowy, miasto">${escapeHtml(details.home_address || "")}</textarea>
-      </label>
       <label class="field">
-        PESEL
-        <input name="pesel" type="text" inputmode="numeric" maxlength="11" value="${escapeHtml(details.pesel || "")}" placeholder="11 cyfr" />
-        <span class="field-note">Aktualnie zapisany PESEL: <strong class="sensitive-value">${escapeHtml(maskPesel(details.pesel))}</strong>. Pokazujemy tylko zamaskowana koncowke.</span>
+        Data urodzenia
+        <input name="birth_date" type="date" max="${new Date().toISOString().slice(0, 10)}" value="${escapeHtml(details.birth_date || "")}" />
       </label>
       <div class="field">
         Tryb przechowywania
@@ -3208,8 +3387,7 @@ async function savePrivateProfileForm(form) {
   const patch = {
     full_name: normalizePrivateField("full_name", String(formData.get("full_name") || "")) || null,
     phone: normalizePrivateField("phone", String(formData.get("phone") || "")) || null,
-    home_address: normalizePrivateField("home_address", String(formData.get("home_address") || "")) || null,
-    pesel: normalizePrivateField("pesel", String(formData.get("pesel") || "")) || null
+    birth_date: normalizePrivateField("birth_date", String(formData.get("birth_date") || "")) || null
   };
   if (Object.values(patch).some(Boolean) && !state.privateProfile?.data_consent_at) {
     patch.data_consent_at = new Date().toISOString();
@@ -3241,6 +3419,9 @@ function normalizePrivateField(field, value) {
     const normalized = normalizePhoneInput(trimmed);
     if (!normalized || !isValidPhoneNumber(normalized)) throw new Error("Numer telefonu powinien miec format miedzynarodowy, np. +48795731886.");
     return normalized;
+  }
+  if (field === "birth_date") {
+    return normalizeBirthDate(trimmed);
   }
   return trimmed.slice(0, 240);
 }
@@ -3538,6 +3719,26 @@ function bindUi() {
     if (!authPassword) return;
     authPassword.type = authPassword.type === "password" ? "text" : "password";
     syncPasswordToggleIcon();
+  });
+  toggleAuthPasswordConfirmButton?.addEventListener("click", () => {
+    if (!authPasswordConfirm) return;
+    authPasswordConfirm.type = authPasswordConfirm.type === "password" ? "text" : "password";
+    syncPasswordConfirmToggleIcon();
+  });
+  if (authBirthDate) {
+    authBirthDate.max = new Date().toISOString().slice(0, 10);
+  }
+  authAvatar?.addEventListener("change", async (event) => {
+    const [file] = Array.from(event.target.files || []);
+    if (!file) return;
+    try {
+      await prepareRegistrationAvatar(file);
+      setAuthStatus("Zdjecie profilowe jest gotowe. Mozesz utworzyc konto.", "success");
+    } catch (error) {
+      state.pendingRegistrationAvatar = "";
+      event.target.value = "";
+      setAuthStatus(error.message || "Nie udalo sie przygotowac zdjecia.", "error");
+    }
   });
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();

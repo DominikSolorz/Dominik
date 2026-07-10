@@ -64,11 +64,10 @@ Sejf trzyma dane osobowe:
 
 - `full_name` - imie i nazwisko
 - `phone` - numer telefonu
-- `home_address` - adres zamieszkania
-- `pesel` - PESEL, widoczny w aplikacji jako zamaskowany
+- `birth_date` - data urodzenia
 - `data_consent_at` - czas pierwszego zapisu danych osobowych
 
-Klient nie czyta telefonu, adresu ani PESEL bezposrednio z tabeli. Odczyt i zapis przechodzi przez `privateProfileVault`, ktory zwraca rekord tylko zalogowanemu uzytkownikowi po weryfikacji JWT.
+Klient nie czyta telefonu ani daty urodzenia bezposrednio z publicznego profilu czatu. Odczyt i zapis przechodzi przez `privateProfileVault`, ktory zwraca rekord tylko zalogowanemu uzytkownikowi po weryfikacji JWT.
 
 Jesli podczas testow rejestracja zwraca `429 Too Many Requests`, najczesciej blokuje ja wysylka maila potwierdzajacego przez domyslnego mailera Supabase. Do prywatnych testow mozna tymczasowo wylaczyc `Authentication -> Providers -> Email -> Confirm email`; docelowo lepiej wlaczyc potwierdzanie email i ustawic wlasny SMTP.
 
@@ -76,7 +75,7 @@ Email wyglada profesjonalniej i dziala stabilniej po ustawieniu:
 
 - `Authentication -> URL Configuration -> Site URL` = publiczny adres aplikacji
 - `Authentication -> URL Configuration -> Redirect URLs` = `https://linktalk.pl/**`, `https://twoj-login.github.io/**` lub aktualny URL testowy
-- `Authentication -> Emails -> SMTP Settings` = wlasny SMTP, np. Brevo, Resend, Mailgun
+- `Authentication -> Emails -> SMTP Settings` = SMTP skrzynki `goldservicepoland@linktalk.pl` w OVH
 - `Authentication -> Email Templates` = wlasny HTML z logo LinkTalk, np. `supabase/email-templates/confirmation.html`
 
 Telefon mozna potwierdzac kodem SMS po ustawieniu:
@@ -87,7 +86,7 @@ Telefon mozna potwierdzac kodem SMS po ustawieniu:
 
 W obecnym interfejsie rejestracja dziala tak:
 
-1. uzytkownik wpisuje email, haslo, imie i nazwisko oraz numer telefonu
+1. uzytkownik wpisuje email, haslo, imie i nazwisko, nazwe profilu, numer telefonu i date urodzenia oraz wybiera zdjecie
 2. dostaje mail potwierdzajacy z przyciskiem i 6-cyfrowym kodem
 3. po pierwszym zalogowaniu otwiera sie centrum weryfikacji telefonu SMS
 4. po weryfikacji numer trafia do prywatnego sejfu danych
