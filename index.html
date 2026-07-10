@@ -79,24 +79,57 @@
 
     <section class="auth-screen" id="authScreen">
       <div class="auth-card">
-        <div class="auth-layout">
+        <div class="auth-topbar">
+          <div class="auth-top-brand">
+            <div class="auth-logo" aria-hidden="true"><img src="icon.svg" alt="" /></div>
+            <div class="auth-top-brand-copy">
+              <p class="eyebrow">LinkTalk</p>
+              <strong>Rozmowy na telefonie i w przegladarce</strong>
+            </div>
+          </div>
+          <div class="auth-top-actions">
+            <button class="ghost-button" id="authTopLoginButton" type="button">Zaloguj</button>
+            <button class="secondary-button auth-top-install" id="authTopInstallButton" type="button">Pobierz APK</button>
+            <button class="primary-button" id="authTopRegisterButton" type="button">Zaloz konto</button>
+          </div>
+        </div>
+
+        <div class="auth-home-grid">
           <div class="auth-showcase">
-            <div class="auth-brand-row">
-              <div class="auth-logo" aria-hidden="true"><img src="icon.svg" alt="" /></div>
-              <div>
-                <p class="eyebrow">LinkTalk</p>
-                <h1>Rozmowy blisko Ciebie</h1>
+            <div class="auth-hero-copy">
+              <span class="hero-kicker">Komunikator inspirowany rytmem nowoczesnego Messengera</span>
+              <h1>Rozmowy, ktore wygladaja nowoczesnie, dzialaja na dwoch ekranach i zostaja blisko Was.</h1>
+              <p class="auth-lead" id="authIntro">
+                LinkTalk laczy web, telefon i konto uzytkownika w jednym miejscu. Najpierw widzisz mocna strone glowna, potem jednym kliknieciem przechodzisz do logowania lub rejestracji.
+              </p>
+              <div class="auth-hero-actions">
+                <button class="primary-button" id="heroRegisterButton" type="button">Utworz konto</button>
+                <button class="secondary-button" id="heroLoginButton" type="button">Mam juz konto</button>
+                <button class="ghost-button" id="heroInstallButton" type="button">Pobierz aplikacje</button>
+              </div>
+              <div class="auth-step-row" aria-hidden="true">
+                <span class="status-pill">WWW + Android</span>
+                <span class="status-pill">Email lub kod</span>
+                <span class="status-pill">SMS po logowaniu</span>
+                <span class="status-pill">Audio na tekst</span>
               </div>
             </div>
-            <p class="auth-lead" id="authIntro">
-              Rozmowy, pliki i wiadomosci synchronizuja sie na laptopie, WWW, Androidzie oraz iPhonie.
-            </p>
-            <div class="auth-step-row" aria-hidden="true">
-              <span class="status-pill">Email</span>
-              <span class="status-pill">Kod SMS</span>
-              <span class="status-pill">Offline</span>
-              <span class="status-pill">Audio na tekst</span>
+
+            <div class="auth-home-stats" aria-hidden="true">
+              <div class="auth-stat-card">
+                <strong>2 ekrany</strong>
+                <span>Telefon i laptop maja ten sam rytm rozmow.</span>
+              </div>
+              <div class="auth-stat-card">
+                <strong>Offline</strong>
+                <span>Po pierwszej synchronizacji ostatnie czaty zostaja przy Tobie.</span>
+              </div>
+              <div class="auth-stat-card">
+                <strong>Glos na tekst</strong>
+                <span>Nagrywasz audio i od razu dostajesz transkrypcje.</span>
+              </div>
             </div>
+
             <div class="auth-preview auth-preview-shell" aria-hidden="true">
               <div class="auth-preview-desktop">
                 <div class="auth-preview-rail">
@@ -233,7 +266,7 @@
                     <span class="preview-avatar accent">EL</span>
                     <div>
                       <strong>Moja zonka</strong>
-                      <span>❤️</span>
+                      <span>❤</span>
                     </div>
                     <small>22:27</small>
                   </div>
@@ -258,10 +291,11 @@
                 </div>
               </div>
             </div>
+
             <div class="auth-feature-grid">
               <div class="auth-feature">
                 <strong>Messengerowy rytm</strong>
-                <span>Lista rozmow, search, stories i dolna nawigacja sa w tym samym duchu na telefonie i laptopie.</span>
+                <span>Lista rozmow, search, stories i dolna nawigacja sa prowadzone w tym samym duchu na telefonie i laptopie.</span>
               </div>
               <div class="auth-feature">
                 <strong>Bezpieczne konto</strong>
@@ -278,10 +312,38 @@
             </div>
           </div>
 
+          <aside class="auth-side-stack" aria-label="Najwazniejsze cechy">
+            <div class="auth-side-card">
+              <span class="auth-side-label">WWW + APK</span>
+              <strong>Jedna marka, dwa sposoby wejscia</strong>
+              <p>Uzytkownik moze zaczac od strony, potem przejsc na telefon i dalej widziec ten sam klimat rozmow.</p>
+            </div>
+            <div class="auth-side-card">
+              <span class="auth-side-label">Weryfikacja</span>
+              <strong>Mail od Was i telefon po Waszemu</strong>
+              <p>Po stronie aplikacji przygotowujemy miejsce pod profesjonalny mail, kod z emaila i kod SMS bez chaosu dla klienta.</p>
+            </div>
+            <div class="auth-side-card">
+              <span class="auth-side-label">Prywatnosc</span>
+              <strong>Regulamin, polityka i dane osobowe</strong>
+              <p>Dokumenty, zgody i ustawienia prywatne sa podane jasno, bez technicznego balaganu.</p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="auth-panel-shell hidden" id="authPanelShell">
           <div class="auth-panel">
-            <h2>Zaloguj sie do rozmow</h2>
-            <p class="auth-panel-copy">
-              Messengerowy uklad, szybkie konto i ciag dalszy na laptopie, stronie oraz telefonie. Email potwierdzasz linkiem, a numer telefonu kodem SMS.
+            <div class="auth-panel-head">
+              <div>
+                <p class="eyebrow" id="authPanelEyebrow">Zaloguj</p>
+                <h2 id="authPanelTitle">Wejdz do rozmow</h2>
+              </div>
+              <button class="icon-button auth-panel-close" id="authClosePanelButton" type="button" aria-label="Zamknij panel logowania">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+            <p class="auth-panel-copy" id="authPanelCopy">
+              Szybkie konto, nowoczesny uklad i dalszy ciag na laptopie, stronie oraz telefonie.
             </p>
             <div class="auth-download-stack">
               <a class="download-link download-link-prominent hidden" id="authDownloadLink" download>Pobierz aplikacje mobilna</a>
@@ -304,7 +366,12 @@
               </label>
               <label class="field">
                 Haslo
-                <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" />
+                <div class="password-field">
+                  <input id="authPassword" type="password" autocomplete="current-password" required minlength="6" />
+                  <button class="password-toggle" id="toggleAuthPasswordButton" type="button" aria-label="Pokaz haslo" title="Pokaz haslo">
+                    <i data-lucide="eye"></i>
+                  </button>
+                </div>
               </label>
               <div class="auth-register-fields hidden" id="authRegisterFields">
                 <div class="section-caption">Dla nowego konta</div>
@@ -320,6 +387,16 @@
                   <input id="authLegalConsent" type="checkbox" />
                   <span>Akceptuje regulamin i polityke prywatnosci oraz zgadzam sie na zapis danych potrzebnych do obslugi konta.</span>
                 </label>
+                <div class="auth-verification-hint">
+                  <div class="auth-verification-card">
+                    <strong>Email od Was</strong>
+                    <span>Klient dostaje link potwierdzajacy albo 6-cyfrowy kod, zalezne od szablonu w Supabase.</span>
+                  </div>
+                  <div class="auth-verification-card">
+                    <strong>Telefon</strong>
+                    <span>Po pierwszym logowaniu domykamy konto kodem SMS, gdy provider telefoniczny jest aktywny.</span>
+                  </div>
+                </div>
               </div>
               <div class="auth-confirmation-panel hidden" id="authEmailOtpPanel">
                 <label class="field">
@@ -331,8 +408,8 @@
                 </div>
               </div>
               <div class="modal-actions is-login-mode" id="authActionRow">
-                <button class="secondary-button hidden" id="registerButton" type="button">Utworz konto</button>
-                <button class="primary-button" type="submit">Zaloguj</button>
+                <button class="secondary-button hidden" id="authSecondaryModeButton" type="button">Nowe konto</button>
+                <button class="primary-button" id="authPrimaryButton" type="submit">Zaloguj</button>
               </div>
             </form>
             <div class="auth-status hidden" id="authStatus" role="status" aria-live="polite"></div>
