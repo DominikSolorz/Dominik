@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0d10" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="linktalk-build" content="2026.07.10-07" />
+    <meta name="linktalk-build" content="2026.07.10-08" />
     <title>LinkTalk</title>
-    <link rel="manifest" href="manifest.webmanifest?v=20260710-07" />
-    <link rel="stylesheet" href="styles.css?v=20260710-07" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260710-08" />
+    <link rel="stylesheet" href="styles.css?v=20260710-08" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="config.js?v=20260710-07"></script>
+    <script src="config.js?v=20260710-08"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -84,7 +84,7 @@
             <div class="auth-logo" aria-hidden="true"><img src="icon.svg" alt="" /></div>
             <div class="auth-top-brand-copy">
               <p class="eyebrow">LinkTalk</p>
-              <strong>Rozmowy na telefonie i w przegladarce</strong>
+              <strong>Czaty, relacje i powiadomienia na stronie oraz Androidzie</strong>
             </div>
           </div>
           <div class="auth-top-actions">
@@ -97,10 +97,10 @@
         <div class="auth-home-grid">
           <div class="auth-showcase">
             <div class="auth-hero-copy">
-              <span class="hero-kicker">Komunikator inspirowany rytmem nowoczesnego Messengera</span>
-              <h1>Rozmowy, ktore wygladaja nowoczesnie, dzialaja na dwoch ekranach i zostaja blisko Was.</h1>
+              <span class="hero-kicker">Strona glowna jak produkt, nie jak zwykly formularz logowania</span>
+              <h1>Najpierw widzisz zywy ekran rozmow. Potem jednym ruchem logujesz sie albo zakladasz konto.</h1>
               <p class="auth-lead" id="authIntro">
-                LinkTalk laczy web, telefon i konto uzytkownika w jednym miejscu. Najpierw widzisz mocna strone glowna, potem jednym kliknieciem przechodzisz do logowania lub rejestracji.
+                LinkTalk startuje jak nowoczesny komunikator: mocny pierwszy widok, znajomy rytm listy czatow i to samo konto na laptopie, stronie oraz telefonie.
               </p>
               <div class="auth-hero-actions">
                 <button class="primary-button" id="heroRegisterButton" type="button">Utworz konto</button>
@@ -108,25 +108,25 @@
                 <button class="ghost-button" id="heroInstallButton" type="button">Pobierz aplikacje</button>
               </div>
               <div class="auth-step-row" aria-hidden="true">
-                <span class="status-pill">WWW + Android</span>
-                <span class="status-pill">Email lub kod</span>
-                <span class="status-pill">SMS po logowaniu</span>
+                <span class="status-pill">Czaty 1 na 1 i grupy</span>
+                <span class="status-pill">Haslo albo kod z maila</span>
+                <span class="status-pill">SMS po pierwszym wejsciu</span>
                 <span class="status-pill">Audio na tekst</span>
               </div>
             </div>
 
             <div class="auth-home-stats" aria-hidden="true">
               <div class="auth-stat-card">
-                <strong>2 ekrany</strong>
-                <span>Telefon i laptop maja ten sam rytm rozmow.</span>
+                <strong>Ten sam klimat</strong>
+                <span>Telefon i laptop pokazuja ten sam uklad rozmow, relacji i powiadomien.</span>
               </div>
               <div class="auth-stat-card">
-                <strong>Offline</strong>
-                <span>Po pierwszej synchronizacji ostatnie czaty zostaja przy Tobie.</span>
+                <strong>Wejscie bez chaosu</strong>
+                <span>Najpierw chwytasz ekran glowny, potem dopiero logujesz sie albo tworzysz konto.</span>
               </div>
               <div class="auth-stat-card">
                 <strong>Glos na tekst</strong>
-                <span>Nagrywasz audio i od razu dostajesz transkrypcje.</span>
+                <span>Nagrywasz audio, a aplikacja od razu przygotowuje transkrypcje.</span>
               </div>
             </div>
 
@@ -294,8 +294,8 @@
 
             <div class="auth-feature-grid">
               <div class="auth-feature">
-                <strong>Messengerowy rytm</strong>
-                <span>Lista rozmow, search, stories i dolna nawigacja sa prowadzone w tym samym duchu na telefonie i laptopie.</span>
+                <strong>Pierwszy ekran z charakterem</strong>
+                <span>Najpierw pokazujesz zywy produkt, dopiero potem prosisz o logowanie lub rejestracje.</span>
               </div>
               <div class="auth-feature">
                 <strong>Bezpieczne konto</strong>
@@ -316,12 +316,12 @@
             <div class="auth-side-card">
               <span class="auth-side-label">WWW + APK</span>
               <strong>Jedna marka, dwa sposoby wejscia</strong>
-              <p>Uzytkownik moze zaczac od strony, potem przejsc na telefon i dalej widziec ten sam klimat rozmow.</p>
+              <p>Uzytkownik moze zaczac od strony glownej, potem przejsc na telefon i dalej widziec ten sam klimat rozmow.</p>
             </div>
             <div class="auth-side-card">
               <span class="auth-side-label">Weryfikacja</span>
               <strong>Mail od Was i telefon po Waszemu</strong>
-              <p>Po stronie aplikacji przygotowujemy miejsce pod profesjonalny mail, kod z emaila i kod SMS bez chaosu dla klienta.</p>
+              <p>Po stronie aplikacji przygotowujemy miejsce pod profesjonalny mail od LinkTalk, kod z emaila i kod SMS bez chaosu dla klienta.</p>
             </div>
             <div class="auth-side-card">
               <span class="auth-side-label">Prywatnosc</span>
@@ -390,7 +390,7 @@
                 <div class="auth-verification-hint">
                   <div class="auth-verification-card">
                     <strong>Email od Was</strong>
-                    <span>Klient dostaje link potwierdzajacy albo 6-cyfrowy kod, zalezne od szablonu w Supabase.</span>
+                    <span>Klient dostaje mail od LinkTalk z linkiem potwierdzajacym albo 6-cyfrowym kodem, zaleznie od szablonu wysylki.</span>
                   </div>
                   <div class="auth-verification-card">
                     <strong>Telefon</strong>
@@ -413,8 +413,8 @@
               </div>
             </form>
             <div class="auth-alt-login" id="authAltLogin">
-              <button class="ghost-button full-width" id="sendEmailCodeButton" type="button">Wyslij kod na maila zamiast hasla</button>
-              <span class="auth-alt-copy">Dziala z linkiem potwierdzajacym albo 6-cyfrowym kodem, zalezne od szablonu maila w Supabase.</span>
+              <button class="ghost-button full-width" id="sendEmailCodeButton" type="button">Wejdz kodem z maila zamiast hasla</button>
+              <span class="auth-alt-copy">Nie pamietasz hasla? Wyslemy mail z linkiem albo 6-cyfrowym kodem, zalezne od aktualnego szablonu wysylki.</span>
             </div>
             <div class="auth-status hidden" id="authStatus" role="status" aria-live="polite"></div>
             <div class="auth-help-actions">
@@ -431,7 +431,7 @@
               <button class="inline-link-button" id="showPrivacyAuthButton" type="button">Polityka prywatnosci</button>
             </div>
             <div class="auth-support-row">
-              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-07</span>
+              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-08</span>
               <button class="inline-link-button subtle" id="refreshAppButton" type="button">Wymus odswiezenie</button>
             </div>
             <div class="setup-warning hidden" id="setupWarning">
@@ -540,8 +540,8 @@
     </dialog>
 
     <script>
-      window.LINKTALK_BUILD = "2026.07.10-07";
+      window.LINKTALK_BUILD = "2026.07.10-08";
     </script>
-    <script type="module" src="app.js?v=20260710-07"></script>
+    <script type="module" src="app.js?v=20260710-08"></script>
   </body>
 </html>
