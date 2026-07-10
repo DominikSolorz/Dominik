@@ -783,6 +783,7 @@ async function syncInlineApkDownload() {
       ? "Chrome moze zainstalowac te strone jako aplikacje. Publiczny link do APK pojawi sie tutaj po kolejnym pelnym buildzie Android."
       : "Link do APK pojawi sie tutaj po pierwszym pelnym buildzie Android i publikacji strony.");
   authDownloadHint.classList.remove("hidden");
+  renderRuntimeStatus();
 }
 
 function syncBuildBadge() {
