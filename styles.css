@@ -1333,12 +1333,14 @@ h3 {
 .auth-preview-chat-actions span {
   min-width: 34px;
   height: 34px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   color: #d8e1ee;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -1536,11 +1538,13 @@ h3 {
 .auth-preview-tool,
 .auth-preview-send {
   min-height: 34px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  border-radius: 999px;
   color: #71bcff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
