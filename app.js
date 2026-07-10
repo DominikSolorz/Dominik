@@ -15,7 +15,7 @@ const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-07");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-08");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -830,12 +830,17 @@ function setAuthMode(mode = "login") {
   if (authPanelTitle) authPanelTitle.textContent = authMode === "login" ? "Wejdz do rozmow" : "Stworz konto i zacznij pisac";
   if (authPanelCopy) {
     authPanelCopy.textContent = authMode === "login"
-      ? "Szybkie konto, nowoczesny uklad i dalszy ciag na laptopie, stronie oraz telefonie."
-      : "Najpierw tworzymy konto, potem potwierdzasz email i domykasz numer telefonu, gdy SMS sa juz aktywne.";
+      ? "Wejdz haslem albo kodem z maila. Potem wracasz do tych samych rozmow na stronie, laptopie i telefonie."
+      : "Zakladasz konto, potwierdzasz email, a numer telefonu dopinasz kodem SMS, gdy dostawca SMS jest juz aktywny.";
+  }
+  if (authEmail) {
+    authEmail.placeholder = authMode === "login"
+      ? "Adres email do logowania"
+      : "Na ten email wyslemy potwierdzenie";
   }
   if (authPassword) {
     authPassword.autocomplete = authMode === "login" ? "current-password" : "new-password";
-    authPassword.placeholder = authMode === "login" ? "" : "Minimum 6 znakow";
+    authPassword.placeholder = authMode === "login" ? "Wpisz haslo albo wybierz kod z maila" : "Minimum 6 znakow";
     authPassword.type = "password";
   }
   syncPasswordToggleIcon();
@@ -1851,7 +1856,7 @@ async function register(email, password, registrationData) {
   return {
     kind: isRepeatedSignup ? "existing" : "created",
     message: isRepeatedSignup
-      ? "Ten email jest juz zapisany albo nadal czeka na potwierdzenie. Zaloguj sie haslem albo wyslij mail potwierdzajacy ponownie."
+      ? "To konto juz istnieje albo nadal czeka na potwierdzenie. Wejdz haslem albo wybierz mail z kodem i potwierdz konto."
       : "Konto zapisane. Sprawdz poczte i potwierdz email. Jesli w mailu widzisz 6-cyfrowy kod, mozesz wpisac go od razu na tej stronie."
   };
 }

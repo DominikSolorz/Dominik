@@ -3883,3 +3883,149 @@ body.app-active .settings-status-card:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(8, 102, 255, 0.16), rgba(8, 102, 255, 0) 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 24%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 118px),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 118px);
+  pointer-events: none;
+}
+
+.auth-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-showcase,
+.auth-side-stack {
+  transition:
+    filter 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.auth-panel-open .auth-showcase,
+.auth-panel-open .auth-side-stack {
+  filter: blur(10px);
+  opacity: 0.28;
+  transform: scale(0.985);
+  pointer-events: none;
+}
+
+.auth-top-actions .primary-button,
+.auth-top-actions .secondary-button,
+.auth-top-actions .ghost-button {
+  white-space: nowrap;
+}
+
+.hero-kicker {
+  max-width: min(100%, 640px);
+  line-height: 1.35;
+}
+
+.auth-showcase h1 {
+  text-wrap: balance;
+}
+
+.auth-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.auth-feature {
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(13, 17, 25, 0.62);
+  padding: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.auth-feature strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.auth-feature span {
+  color: #c6cedb;
+  line-height: 1.5;
+}
+
+.auth-alt-login .ghost-button {
+  min-height: 48px;
+}
+
+@media (max-width: 760px) {
+  .auth-topbar {
+    gap: 16px;
+  }
+
+  .auth-top-brand {
+    width: 100%;
+  }
+
+  .auth-top-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .auth-top-install {
+    grid-column: 1 / -1;
+  }
+
+  .auth-top-actions .ghost-button,
+  .auth-top-actions .secondary-button,
+  .auth-top-actions .primary-button {
+    min-height: 48px;
+    height: auto;
+    white-space: normal;
+    line-height: 1.15;
+    padding: 12px 10px;
+  }
+
+  .hero-kicker {
+    min-height: 0;
+    padding: 8px 12px;
+  }
+
+  .auth-showcase h1 {
+    font-size: 30px;
+    line-height: 1.03;
+  }
+
+  .auth-lead {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .auth-home-stats,
+  .auth-feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-preview-desktop {
+    display: none;
+  }
+
+  .auth-preview-shell {
+    justify-items: center;
+  }
+
+  .auth-preview-phone {
+    width: min(100%, 340px);
+    justify-self: center;
+  }
+
+  .auth-panel-open .auth-showcase,
+  .auth-panel-open .auth-side-stack {
+    filter: none;
+    opacity: 0.16;
+    transform: none;
+  }
+}
