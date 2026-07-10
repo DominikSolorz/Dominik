@@ -83,6 +83,9 @@ const authOfflineBanner = document.getElementById("authOfflineBanner");
 const authDownloadLink = document.getElementById("authDownloadLink");
 const authDownloadHint = document.getElementById("authDownloadHint");
 const authInstallButton = document.getElementById("authInstallButton");
+const authLoginModeButton = document.getElementById("authLoginModeButton");
+const authRegisterModeButton = document.getElementById("authRegisterModeButton");
+const authRegisterFields = document.getElementById("authRegisterFields");
 const authFullName = document.getElementById("authFullName");
 const authPhone = document.getElementById("authPhone");
 const authLegalConsent = document.getElementById("authLegalConsent");
@@ -93,6 +96,7 @@ const resendConfirmationButton = document.getElementById("resendConfirmationButt
 const authRateLimitHelpButton = document.getElementById("authRateLimitHelpButton");
 const buildBadge = document.getElementById("buildBadge");
 const refreshAppButton = document.getElementById("refreshAppButton");
+const registerButton = document.getElementById("registerButton");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
 const messagesEl = document.getElementById("messages");
@@ -129,6 +133,7 @@ let resendCooldownTimer = null;
 let apkDownloadChecked = false;
 let apkDownloadAvailable = false;
 let deferredInstallPrompt = null;
+let authMode = "login";
 
 const infoDocuments = {
   terms: {
@@ -738,6 +743,7 @@ function showAuth() {
   document.body.classList.remove("app-active");
   setupWarning.classList.toggle("hidden", hasBackend);
   authForm.classList.toggle("hidden", !hasBackend);
+  setAuthMode(authMode);
   renderConnectionStatus();
 }
 
@@ -760,6 +766,14 @@ function setAuthStatus(message = "", type = "", options = {}) {
   authEmailOtpPanel?.classList.toggle("hidden", !showEmailOtp);
   if (!showEmailOtp && authEmailOtp) authEmailOtp.value = "";
   syncResendButtonState();
+}
+
+function setAuthMode(mode = "login") {
+  authMode = mode === "register" ? "register" : "login";
+  authLoginModeButton?.classList.toggle("active", authMode === "login");
+  authRegisterModeButton?.classList.toggle("active", authMode === "register");
+  authRegisterFields?.classList.toggle("hidden", authMode !== "register");
+  registerButton?.classList.toggle("hidden", authMode !== "register");
 }
 
 function setAuthBusy(isBusy, message = "") {
@@ -2954,6 +2968,8 @@ async function renderUtilityView(view) {
 
 function bindUi() {
   refreshAppButton?.addEventListener("click", () => refreshInstalledAssets().catch((error) => toast(error.message)));
+  authLoginModeButton?.addEventListener("click", () => setAuthMode("login"));
+  authRegisterModeButton?.addEventListener("click", () => setAuthMode("register"));
   authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (state.isOffline) {
@@ -2973,7 +2989,7 @@ function bindUi() {
     }
   });
 
-  document.getElementById("registerButton").addEventListener("click", async () => {
+  registerButton?.addEventListener("click", async () => {
     if (state.isOffline) {
       setAuthStatus("Brak internetu. Rejestracja wymaga polaczenia z serwerem.", "error");
       return;
