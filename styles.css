@@ -1845,12 +1845,19 @@ h3 {
 
 .auth-mode-button {
   min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 14px;
+  appearance: none;
+  -webkit-appearance: none;
   background: transparent;
   color: #aeb8c8;
   font-size: 14px;
   font-weight: 800;
+  font-family: inherit;
+  box-shadow: none;
 }
 
 .auth-mode-button.active {
