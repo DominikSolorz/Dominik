@@ -3445,6 +3445,7 @@ function bindUi() {
     }
     if (!authForm.reportValidity()) return;
     lastAuthEmail = document.getElementById("authEmail").value.trim();
+    lastEmailFlow = "password";
     setAuthBusy(true, "Logowanie...");
     try {
       await login(lastAuthEmail, authPassword.value);
