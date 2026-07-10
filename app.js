@@ -15,7 +15,7 @@ const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-08");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-09");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -89,6 +89,9 @@ const authTopInstallButton = document.getElementById("authTopInstallButton");
 const heroLoginButton = document.getElementById("heroLoginButton");
 const heroRegisterButton = document.getElementById("heroRegisterButton");
 const heroInstallButton = document.getElementById("heroInstallButton");
+const listenLandingButton = document.getElementById("listenLandingButton");
+const listenTermsButton = document.getElementById("listenTermsButton");
+const listenPrivacyButton = document.getElementById("listenPrivacyButton");
 const setupWarning = document.getElementById("setupWarning");
 const authStatus = document.getElementById("authStatus");
 const connectionBanner = document.getElementById("connectionBanner");
@@ -143,6 +146,14 @@ const infoModal = document.getElementById("infoModal");
 const infoTitle = document.getElementById("infoTitle");
 const infoContent = document.getElementById("infoContent");
 const listenInfoButton = document.getElementById("listenInfoButton");
+const runtimeSiteValue = document.getElementById("runtimeSiteValue");
+const runtimeSiteNote = document.getElementById("runtimeSiteNote");
+const runtimeDataValue = document.getElementById("runtimeDataValue");
+const runtimeDataNote = document.getElementById("runtimeDataNote");
+const runtimeApkValue = document.getElementById("runtimeApkValue");
+const runtimeApkNote = document.getElementById("runtimeApkNote");
+const runtimeOfflineValue = document.getElementById("runtimeOfflineValue");
+const runtimeOfflineNote = document.getElementById("runtimeOfflineNote");
 
 let pendingThemeId = "classic";
 let lastAuthEmail = "";
@@ -156,6 +167,8 @@ let authPanelOpen = false;
 let lastEmailFlow = "signup";
 let currentInfoDocumentKind = "terms";
 let infoNarrationActive = false;
+let landingNarrationActive = false;
+let runtimeHealth = null;
 
 const infoDocuments = {
   terms: {
