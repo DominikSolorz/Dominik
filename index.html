@@ -39,7 +39,7 @@
 
         <label class="search-box">
           <i data-lucide="search"></i>
-          <input id="searchInput" type="search" placeholder="Szukaj w LinkTalk" />
+          <input id="searchInput" type="search" placeholder="Szukaj lub napisz wiadomosc" />
         </label>
 
         <div class="story-strip" id="storyStrip" aria-label="Relacje"></div>
@@ -332,6 +332,11 @@
             <div class="auth-help-actions">
               <button class="secondary-button hidden" id="resendConfirmationButton" type="button">Wyslij link potwierdzajacy ponownie</button>
               <button class="secondary-button hidden" id="authRateLimitHelpButton" type="button">Pomoc 429 i testy</button>
+            </div>
+            <div class="auth-trust-row" aria-hidden="true">
+              <span class="auth-trust-pill"><i data-lucide="shield-check"></i>Prywatne konto</span>
+              <span class="auth-trust-pill"><i data-lucide="lock"></i>Bezpieczne logowanie</span>
+              <span class="auth-trust-pill"><i data-lucide="badge-check"></i>Regulamin i prywatnosc</span>
             </div>
             <div class="auth-quick-links">
               <button class="inline-link-button" id="showTermsAuthButton" type="button">Regulamin</button>
