@@ -926,6 +926,8 @@ function showAuthError(error) {
 
 function renderInfoDocument(kind) {
   const doc = infoDocuments[kind] || infoDocuments.terms;
+  currentInfoDocumentKind = kind;
+  stopInfoNarration();
   infoTitle.textContent = doc.title;
   infoContent.innerHTML = `
     <div class="info-intro">${escapeHtml(doc.intro || "")}</div>
@@ -937,12 +939,70 @@ function renderInfoDocument(kind) {
       </section>
     `).join("")}
   `;
+  updateInfoNarrationButton();
 }
 
 function openInfoDocument(kind) {
   renderInfoDocument(kind);
   infoModal.showModal();
   refreshIcons();
+}
+
+function buildNarrationText(doc) {
+  const chunks = [doc?.title, doc?.intro];
+  (doc?.sections || []).forEach((section) => {
+    chunks.push(section.heading);
+    (section.paragraphs || []).forEach((paragraph) => chunks.push(paragraph));
+    (section.bullets || []).forEach((bullet) => chunks.push(bullet));
+  });
+  return chunks.filter(Boolean).join(". ");
+}
+
+function stopInfoNarration() {
+  if (!("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  infoNarrationActive = false;
+  updateInfoNarrationButton();
+}
+
+function updateInfoNarrationButton() {
+  if (!listenInfoButton) return;
+  const supported = "speechSynthesis" in window;
+  listenInfoButton.classList.toggle("hidden", !supported);
+  if (!supported) return;
+  listenInfoButton.innerHTML = infoNarrationActive
+    ? '<i data-lucide="square"></i>'
+    : '<i data-lucide="volume-2"></i>';
+  listenInfoButton.setAttribute("aria-label", infoNarrationActive ? "Zatrzymaj odsluch" : "Odsluchaj dokument");
+  listenInfoButton.title = infoNarrationActive ? "Zatrzymaj odsluch" : "Odsluchaj dokument";
+  refreshIcons();
+}
+
+function toggleInfoNarration() {
+  if (!("speechSynthesis" in window)) {
+    toast("Ta przegladarka nie obsluguje odsluchu tekstu.");
+    return;
+  }
+  if (infoNarrationActive) {
+    stopInfoNarration();
+    return;
+  }
+  const doc = infoDocuments[currentInfoDocumentKind] || infoDocuments.terms;
+  const utterance = new SpeechSynthesisUtterance(buildNarrationText(doc));
+  utterance.lang = "pl-PL";
+  utterance.rate = 0.98;
+  utterance.onend = () => {
+    infoNarrationActive = false;
+    updateInfoNarrationButton();
+  };
+  utterance.onerror = () => {
+    infoNarrationActive = false;
+    updateInfoNarrationButton();
+  };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+  infoNarrationActive = true;
+  updateInfoNarrationButton();
 }
 
 function authRedirectUrl() {
@@ -1781,11 +1841,57 @@ async function register(email, password, registrationData) {
   });
   if (error) throw error;
   state.pendingPhoneVerification = phone;
-  if (data.session) return "Konto utworzone i zalogowano. Laduje rozmowy...";
-  return "Konto utworzone. Sprawdz poczte i potwierdz email. Jesli w mailu widzisz 6-cyfrowy kod, mozesz wpisac go od razu na tej stronie.";
+  if (data.session) {
+    return {
+      kind: "logged-in",
+      message: "Konto utworzone i zalogowano. Laduje rozmowy..."
+    };
+  }
+  const isRepeatedSignup = Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
+  return {
+    kind: isRepeatedSignup ? "existing" : "created",
+    message: isRepeatedSignup
+      ? "Ten email jest juz zapisany albo nadal czeka na potwierdzenie. Zaloguj sie haslem albo wyslij mail potwierdzajacy ponownie."
+      : "Konto zapisane. Sprawdz poczte i potwierdz email. Jesli w mailu widzisz 6-cyfrowy kod, mozesz wpisac go od razu na tej stronie."
+  };
+}
+
+async function requestEmailCodeForLogin(isResend = false) {
+  const email = lastAuthEmail || document.getElementById("authEmail").value.trim();
+  if (!email) {
+    setAuthStatus("Najpierw wpisz email, na ktory mamy wyslac link albo kod.", "error");
+    return;
+  }
+  setAuthBusy(true, isResend ? "Ponawiam wysylke..." : "Wysylam kod albo link...");
+  try {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: authRedirectUrl()
+      }
+    });
+    if (error) throw error;
+    lastAuthEmail = email;
+    lastEmailFlow = "login_otp";
+    startResendCooldown(45);
+    setAuthStatus(
+      "Wyslalismy mail od LinkTalk. Jesli wiadomosc zawiera 6-cyfrowy kod, wpisz go ponizej. Jesli zawiera link, kliknij go i wroc do rozmow.",
+      "success",
+      { showResend: true, showEmailOtp: true }
+    );
+  } catch (error) {
+    showAuthError(error);
+  } finally {
+    setAuthBusy(false);
+  }
 }
 
 async function resendConfirmationEmail() {
+  if (lastEmailFlow === "login_otp") {
+    await requestEmailCodeForLogin(true);
+    return;
+  }
   const email = lastAuthEmail || document.getElementById("authEmail").value.trim();
   if (!email) {
     setAuthStatus("Wpisz email, zeby wyslac link potwierdzajacy.", "error");
@@ -1829,7 +1935,7 @@ async function verifyEmailOtpCode() {
       type: "email"
     });
     if (error) throw error;
-    setAuthStatus("Email potwierdzony. Laduje konto...", "success");
+    setAuthStatus(lastEmailFlow === "login_otp" ? "Kod przyjety. Laduje konto..." : "Email potwierdzony. Laduje konto...", "success");
   } catch (error) {
     setAuthStatus(humanizeAuthError(error), "error", { showEmailOtp: true, showResend: true });
   } finally {
