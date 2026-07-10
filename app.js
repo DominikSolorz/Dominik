@@ -1027,6 +1027,7 @@ function conversationTitle(conversation) {
 function conversationSubtitle(conversation) {
   if (conversation.is_group) return `${conversationMembers(conversation.id).length} osob`;
   const other = otherConversationProfile(conversation);
+  if (other?.is_online) return "Aktywny(a) teraz";
   return other?.status_text || "Rozmowa prywatna";
 }
 
@@ -1081,7 +1082,12 @@ function conversationPreviewText(conversation) {
   const message = getLatestConversationMessage(conversation.id);
   if (!message) return conversationSubtitle(conversation);
   const mine = message.sender_id === state.user?.id;
-  const prefix = mine ? "Ty: " : "";
+  let prefix = mine ? "Ty: " : "";
+  if (conversation.is_group && !mine) {
+    const sender = state.profiles[message.sender_id];
+    const senderLabel = sender?.display_name || sender?.username || "Kontakt";
+    prefix = `${senderLabel}: `;
+  }
   return `${prefix}${messagePreviewLabel(message)}`;
 }
 
@@ -2033,6 +2039,7 @@ function renderHeader() {
   const title = conversationTitle(conversation);
   const subtitle = conversationSubtitle(conversation);
   const other = otherConversationProfile(conversation);
+  const presenceClass = other?.is_online ? "presence-line is-online" : "presence-line";
   chatHeader.innerHTML = `
     <div class="chat-person">
       <button class="icon-button mobile-back" id="mobileBack" aria-label="Wroc"><i data-lucide="arrow-left"></i></button>
@@ -2043,7 +2050,7 @@ function renderHeader() {
       })}
       <span>
         <strong>${escapeHtml(title)}</strong>
-        <span class="presence-line">${escapeHtml(subtitle)}</span>
+        <span class="${presenceClass}">${escapeHtml(subtitle)}</span>
       </span>
     </div>
     <div class="chat-actions">
