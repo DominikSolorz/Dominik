@@ -1943,6 +1943,15 @@ h3 {
   width: 100%;
 }
 
+#authActionRow.is-login-mode {
+  justify-content: stretch;
+}
+
+#authActionRow.is-login-mode .primary-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .auth-trust-row {
   display: flex;
   flex-wrap: wrap;

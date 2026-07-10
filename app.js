@@ -96,6 +96,7 @@ const resendConfirmationButton = document.getElementById("resendConfirmationButt
 const authRateLimitHelpButton = document.getElementById("authRateLimitHelpButton");
 const buildBadge = document.getElementById("buildBadge");
 const refreshAppButton = document.getElementById("refreshAppButton");
+const authActionRow = document.getElementById("authActionRow");
 const registerButton = document.getElementById("registerButton");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
@@ -774,6 +775,7 @@ function setAuthMode(mode = "login") {
   authRegisterModeButton?.classList.toggle("active", authMode === "register");
   authRegisterFields?.classList.toggle("hidden", authMode !== "register");
   registerButton?.classList.toggle("hidden", authMode !== "register");
+  authActionRow?.classList.toggle("is-login-mode", authMode === "login");
 }
 
 function setAuthBusy(isBusy, message = "") {
