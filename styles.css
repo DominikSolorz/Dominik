@@ -1020,6 +1020,43 @@ h3 {
   align-content: start;
 }
 
+.settings-profile-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(8, 102, 255, 0.1), rgba(8, 102, 255, 0.02));
+  border: 1px solid rgba(8, 102, 255, 0.16);
+}
+
+.settings-profile-card strong,
+.settings-profile-card span,
+.settings-profile-card small {
+  display: block;
+}
+
+.settings-profile-card span,
+.settings-profile-card small {
+  color: var(--muted);
+}
+
+.settings-menu-group {
+  display: grid;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+.settings-group-title {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0 10px 4px;
+}
+
 .settings-content {
   border: 0;
   border-radius: var(--radius);
@@ -1045,6 +1082,16 @@ h3 {
   color: var(--muted);
 }
 
+.settings-banner-dark {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.94), rgba(13, 18, 28, 0.98));
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.settings-banner-dark strong,
+.settings-banner-dark p {
+  color: #f5f7fb;
+}
+
 .settings-row {
   display: flex;
   align-items: center;
@@ -1068,6 +1115,59 @@ h3 {
 .settings-stack {
   display: grid;
   gap: 6px;
+}
+
+.settings-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.settings-status-card {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.settings-status-card strong {
+  font-size: 14px;
+}
+
+.settings-status-card span {
+  color: var(--muted);
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+.settings-doc-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.settings-doc-item {
+  min-height: 58px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  font-weight: 700;
+}
+
+.settings-doc-item:hover {
+  background: var(--panel-3);
 }
 
 .profile-form-grid {
@@ -1946,6 +2046,18 @@ h3 {
   margin-top: 10px;
 }
 
+.auth-alt-login {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.auth-alt-copy {
+  color: #aeb8c8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .auth-help-actions .secondary-button {
   width: 100%;
 }
@@ -2175,6 +2287,12 @@ h3 {
   padding-left: 18px;
   color: var(--muted);
   line-height: 1.5;
+}
+
+.modal-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 body.app-active,
