@@ -15,7 +15,7 @@ const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-05");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-06");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
