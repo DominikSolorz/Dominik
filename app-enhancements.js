@@ -629,10 +629,41 @@ function observeUi() {
   }
 }
 
+function bindVisualSurfaceStates() {
+  const inboxHeader = document.querySelector(".inbox-header");
+  const chatHeader = document.getElementById("chatHeader");
+  const composerEl = document.getElementById("composer");
+  const input = document.getElementById("messageInput");
+  const list = document.getElementById("conversationList");
+  const messages = document.getElementById("messages");
+
+  const syncElevatedState = (scrollEl, target) => {
+    if (!scrollEl || !target) return;
+    target.classList.toggle("elevated", scrollEl.scrollTop > 6);
+  };
+
+  const syncTypingState = () => {
+    if (!composerEl || !input) return;
+    const active = document.activeElement === input || String(input.value || "").trim().length > 0;
+    composerEl.classList.toggle("is-typing", active);
+  };
+
+  list?.addEventListener("scroll", () => syncElevatedState(list, inboxHeader), { passive: true });
+  messages?.addEventListener("scroll", () => syncElevatedState(messages, chatHeader), { passive: true });
+  input?.addEventListener("focus", syncTypingState);
+  input?.addEventListener("blur", syncTypingState);
+  input?.addEventListener("input", syncTypingState);
+
+  syncElevatedState(list, inboxHeader);
+  syncElevatedState(messages, chatHeader);
+  syncTypingState();
+}
+
 injectStyles();
 ensureInfoModal();
 bindDocumentEvents();
 ensureAuthExtras();
 ensureSettingsExtras();
 observeUi();
+bindVisualSurfaceStates();
 refreshIcons();
