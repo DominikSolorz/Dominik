@@ -2236,7 +2236,9 @@ body.app-active .reaction-pill {
   }
 
   .auth-panel {
-    margin: 10px 14px 0;
+    position: relative;
+    z-index: 1;
+    margin: -12px 14px 0;
     padding: 20px 18px 24px;
     border-radius: 28px;
     background: rgba(11, 14, 21, 0.96);
