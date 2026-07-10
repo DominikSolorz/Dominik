@@ -1290,16 +1290,23 @@ h3 {
   font-weight: 900;
 }
 
-.auth-preview-rail-dot {
-  width: 12px;
-  height: 12px;
+.auth-preview-rail-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.4);
 }
 
-.auth-preview-rail-dot.active {
-  background: #1682ff;
-  box-shadow: 0 0 0 6px rgba(22, 130, 255, 0.16);
+.auth-preview-rail-icon.active {
+  background: rgba(8, 102, 255, 0.16);
+  color: #54b4ff;
+}
+
+.auth-preview-rail-icon svg {
+  width: 17px;
+  height: 17px;
 }
 
 .auth-preview-sidebar,
@@ -1345,6 +1352,17 @@ h3 {
   font-weight: 800;
 }
 
+.auth-preview-compose svg,
+.auth-preview-chat-actions span svg,
+.auth-preview-tool svg,
+.auth-preview-send svg,
+.auth-preview-phone-header span svg,
+.auth-preview-phone-nav svg,
+.auth-preview-phone-story-avatar svg {
+  width: 16px;
+  height: 16px;
+}
+
 .auth-preview-search,
 .auth-preview-phone-search {
   min-height: 44px;
@@ -1372,6 +1390,7 @@ h3 {
   color: #c6cedb;
   font-size: 11px;
   text-align: center;
+  position: relative;
 }
 
 .auth-preview-story-avatar {
@@ -1393,6 +1412,17 @@ h3 {
 
 .auth-preview-story-create .auth-preview-story-avatar {
   background: rgba(255, 255, 255, 0.09);
+}
+
+.auth-preview-story-status {
+  width: 11px;
+  height: 11px;
+  position: absolute;
+  right: 4px;
+  top: 38px;
+  border-radius: 50%;
+  background: #31a24c;
+  border: 2px solid #11161d;
 }
 
 .auth-preview-thread-list {
@@ -1715,6 +1745,17 @@ h3 {
   color: #9da7b7;
   font-size: 11px;
   font-weight: 700;
+}
+
+.auth-preview-phone-nav span {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 42px;
+}
+
+.auth-preview-phone-nav small {
+  font-size: 10px;
 }
 
 .auth-preview-phone-nav .active {
