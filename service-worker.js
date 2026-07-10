@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026.07.10-08";
+const BUILD_VERSION = "2026.07.10-09";
 const CACHE_NAME = `linktalk-v5-${BUILD_VERSION}`;
 const APP_ASSETS = [
   "./",
