@@ -9,7 +9,6 @@ const APP_ASSETS = [
   `./config.js?v=${BUILD_VERSION}`,
   "./styles.css",
   "./app.js",
-  "./app-enhancements.js",
   "./manifest.webmanifest",
   "./icon.svg",
   "./config.js"
@@ -69,27 +68,6 @@ self.addEventListener("fetch", (event) => {
         return response;
       } catch {
         return caches.match(event.request) || cache.match("./config.js");
-      }
-    })());
-    return;
-  }
-  if (url.pathname.endsWith("/app.js")) {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(event.request, { cache: "no-store" });
-        const text = await response.text();
-        const patched = new Response(`${text}\nimport("./app-enhancements.js").catch(() => {});\n`, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: {
-            "Content-Type": "application/javascript; charset=utf-8"
-          }
-        });
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(event.request, patched.clone());
-        return patched;
-      } catch (error) {
-        return caches.match(event.request) || fetch(event.request);
       }
     })());
     return;
