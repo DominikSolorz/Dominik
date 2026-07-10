@@ -15,7 +15,7 @@ const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-06");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-07");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -112,6 +112,8 @@ const refreshAppButton = document.getElementById("refreshAppButton");
 const authActionRow = document.getElementById("authActionRow");
 const authPassword = document.getElementById("authPassword");
 const toggleAuthPasswordButton = document.getElementById("toggleAuthPasswordButton");
+const authAltLogin = document.getElementById("authAltLogin");
+const sendEmailCodeButton = document.getElementById("sendEmailCodeButton");
 const conversationList = document.getElementById("conversationList");
 const chatHeader = document.getElementById("chatHeader");
 const messagesEl = document.getElementById("messages");
@@ -140,6 +142,7 @@ const verificationContent = document.getElementById("verificationContent");
 const infoModal = document.getElementById("infoModal");
 const infoTitle = document.getElementById("infoTitle");
 const infoContent = document.getElementById("infoContent");
+const listenInfoButton = document.getElementById("listenInfoButton");
 
 let pendingThemeId = "classic";
 let lastAuthEmail = "";
@@ -150,6 +153,9 @@ let apkDownloadAvailable = false;
 let deferredInstallPrompt = null;
 let authMode = "login";
 let authPanelOpen = false;
+let lastEmailFlow = "signup";
+let currentInfoDocumentKind = "terms";
+let infoNarrationActive = false;
 
 const infoDocuments = {
   terms: {
@@ -814,6 +820,7 @@ function setAuthMode(mode = "login") {
   authRegisterFields?.classList.toggle("hidden", authMode !== "register");
   authActionRow?.classList.toggle("is-login-mode", authMode === "login");
   authActionRow?.classList.toggle("is-register-mode", authMode === "register");
+  authAltLogin?.classList.toggle("hidden", authMode !== "login");
   if (authPrimaryButton) authPrimaryButton.textContent = authMode === "login" ? "Zaloguj" : "Utworz konto";
   if (authSecondaryModeButton) {
     authSecondaryModeButton.classList.toggle("hidden", false);
