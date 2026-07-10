@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0d10" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="linktalk-build" content="2026.07.10-03" />
+    <meta name="linktalk-build" content="2026.07.10-04" />
     <title>LinkTalk</title>
-    <link rel="manifest" href="manifest.webmanifest?v=20260710-03" />
-    <link rel="stylesheet" href="styles.css?v=20260710-03" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260710-04" />
+    <link rel="stylesheet" href="styles.css?v=20260710-04" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="config.js?v=20260710-03"></script>
+    <script src="config.js?v=20260710-04"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -98,6 +98,82 @@
               <span class="status-pill">Audio na tekst</span>
             </div>
             <div class="auth-preview auth-preview-shell" aria-hidden="true">
+              <div class="auth-preview-phone">
+                <div class="auth-preview-phone-notch"></div>
+                <div class="auth-preview-phone-header">
+                  <strong>linktalk</strong>
+                  <span><i data-lucide="square-pen"></i></span>
+                </div>
+                <div class="auth-preview-phone-search">
+                  <i data-lucide="search"></i>
+                  <span>Szukaj lub napisz...</span>
+                </div>
+                <div class="auth-preview-phone-stories">
+                  <div class="auth-preview-phone-story auth-preview-phone-story-create">
+                    <span class="auth-preview-phone-story-avatar"><i data-lucide="plus"></i></span>
+                    <span>Twoja relacja</span>
+                  </div>
+                  <div class="auth-preview-phone-story unread">
+                    <span class="auth-preview-phone-story-avatar accent">EW</span>
+                    <span>Ewelina</span>
+                    <span class="auth-preview-phone-status"></span>
+                  </div>
+                  <div class="auth-preview-phone-story">
+                    <span class="auth-preview-phone-story-avatar">MA</span>
+                    <span>Marcin</span>
+                    <span class="auth-preview-phone-status"></span>
+                  </div>
+                  <div class="auth-preview-phone-story unread">
+                    <span class="auth-preview-phone-story-avatar accent">JU</span>
+                    <span>Justyna</span>
+                    <span class="auth-preview-phone-status"></span>
+                  </div>
+                </div>
+                <div class="auth-preview-phone-list">
+                  <div class="auth-preview-phone-row unread">
+                    <span class="preview-avatar-wrap">
+                      <span class="preview-avatar">DS</span>
+                      <span class="preview-unread-dot"></span>
+                    </span>
+                    <div>
+                      <strong>Dominik Solorz</strong>
+                      <span>Cofnieto wysylanie wiadomosci</span>
+                    </div>
+                    <small>19 cze</small>
+                  </div>
+                  <div class="auth-preview-phone-row active">
+                    <span class="preview-avatar-wrap">
+                      <span class="preview-avatar accent">EL</span>
+                    </span>
+                    <div>
+                      <strong>Moja zonka</strong>
+                      <span>❤️</span>
+                    </div>
+                    <small>22:27</small>
+                  </div>
+                  <div class="auth-preview-phone-row unread">
+                    <span class="preview-avatar-wrap">
+                      <span class="preview-avatar">KA</span>
+                      <span class="preview-unread-dot"></span>
+                    </span>
+                    <div>
+                      <strong>Katowice - mieszkancy</strong>
+                      <span>Nowa wiadomosc w grupie</span>
+                    </div>
+                    <small>sro.</small>
+                  </div>
+                </div>
+                <button class="auth-preview-phone-pill" type="button">
+                  <span class="auth-preview-phone-orb"></span>
+                  <span>Zapytaj LinkTalk AI</span>
+                </button>
+                <div class="auth-preview-phone-nav">
+                  <span class="active"><i data-lucide="message-circle"></i><small>Czaty</small></span>
+                  <span><i data-lucide="users"></i><small>Osoby</small></span>
+                  <span><i data-lucide="sparkles"></i><small>AI</small></span>
+                  <span><i data-lucide="settings"></i><small>Ustaw.</small></span>
+                </div>
+              </div>
               <div class="auth-preview-desktop">
                 <div class="auth-preview-rail">
                   <span class="auth-preview-rail-logo">LT</span>
@@ -110,13 +186,16 @@
                     <strong>LinkTalk</strong>
                     <span class="auth-preview-compose"><i data-lucide="square-pen"></i></span>
                   </div>
-                  <div class="auth-preview-search">Zapytaj AI lub wyszukaj</div>
+                  <div class="auth-preview-search">
+                    <i data-lucide="search"></i>
+                    <span>Szukaj lub napisz...</span>
+                  </div>
                   <div class="auth-preview-stories">
                     <div class="auth-preview-story auth-preview-story-create">
                       <span class="auth-preview-story-avatar"><i data-lucide="plus"></i></span>
-                      <span>Nowa</span>
+                      <span>Twoja relacja</span>
                     </div>
-                    <div class="auth-preview-story">
+                    <div class="auth-preview-story unread">
                       <span class="auth-preview-story-avatar accent">EW</span>
                       <span>Ewelina</span>
                       <span class="auth-preview-story-status"></span>
@@ -126,15 +205,18 @@
                       <span>Marcin</span>
                       <span class="auth-preview-story-status"></span>
                     </div>
-                    <div class="auth-preview-story">
+                    <div class="auth-preview-story unread">
                       <span class="auth-preview-story-avatar accent">JU</span>
                       <span>Justyna</span>
                       <span class="auth-preview-story-status"></span>
                     </div>
                   </div>
                   <div class="auth-preview-thread-list">
-                    <div class="preview-thread active">
-                      <div class="preview-avatar">DS</div>
+                    <div class="preview-thread active unread">
+                      <span class="preview-avatar-wrap">
+                        <span class="preview-avatar">DS</span>
+                        <span class="preview-unread-dot"></span>
+                      </span>
                       <div class="preview-thread-copy">
                         <strong>Dominik Solorz</strong>
                         <span>Cofnieto wysylanie wiadomosci</span>
@@ -142,15 +224,20 @@
                       <small>19 cze</small>
                     </div>
                     <div class="preview-thread">
-                      <div class="preview-avatar accent">EL</div>
+                      <span class="preview-avatar-wrap">
+                        <span class="preview-avatar accent">EL</span>
+                      </span>
                       <div class="preview-thread-copy">
                         <strong>Moja zonka</strong>
                         <span>Wyslij mi prosze glosowke po pracy.</span>
                       </div>
                       <small>22:27</small>
                     </div>
-                    <div class="preview-thread">
-                      <div class="preview-avatar">TM</div>
+                    <div class="preview-thread unread">
+                      <span class="preview-avatar-wrap">
+                        <span class="preview-avatar">TM</span>
+                        <span class="preview-unread-dot"></span>
+                      </span>
                       <div class="preview-thread-copy">
                         <strong>Time grup praca</strong>
                         <span>Eryk wyslal zdjecie.</span>
@@ -175,9 +262,23 @@
                     </div>
                   </div>
                   <div class="preview-bubbles auth-preview-chat-bubbles">
-                    <div class="preview-bubble incoming">Masz juz link do APK?</div>
-                    <div class="preview-bubble outgoing">Tak, dodatkowo dziala tez z przegladarki.</div>
-                    <div class="preview-bubble outgoing soft">Po pierwszej synchronizacji ostatnie wiadomosci zostaja offline.</div>
+                    <div class="preview-message incoming">
+                      <div class="preview-bubble incoming">Masz juz link do APK?</div>
+                      <small>22:25</small>
+                    </div>
+                    <div class="preview-message outgoing">
+                      <div class="preview-bubble outgoing">Tak, dodatkowo dziala tez z przegladarki.</div>
+                      <small>22:26</small>
+                    </div>
+                    <div class="preview-message outgoing">
+                      <div class="preview-bubble outgoing soft">Po pierwszej synchronizacji ostatnie wiadomosci zostaja offline.</div>
+                      <small>22:27</small>
+                    </div>
+                    <div class="auth-preview-smart-replies">
+                      <span class="auth-preview-smart-reply">Wyslij link</span>
+                      <span class="auth-preview-smart-reply">Dzieki ❤️</span>
+                      <span class="auth-preview-smart-reply">Sprawdzam teraz</span>
+                    </div>
                   </div>
                   <div class="auth-preview-composer">
                     <span class="auth-preview-tool"><i data-lucide="plus"></i></span>
@@ -187,71 +288,6 @@
                     <span class="auth-preview-tool"><i data-lucide="smile"></i></span>
                     <span class="auth-preview-send"><i data-lucide="thumbs-up"></i></span>
                   </div>
-                </div>
-              </div>
-              <div class="auth-preview-phone">
-                <div class="auth-preview-phone-notch"></div>
-                <div class="auth-preview-phone-header">
-                  <strong>linktalk</strong>
-                  <span><i data-lucide="square-pen"></i></span>
-                </div>
-                <div class="auth-preview-phone-search">Zapytaj AI lub wyszukaj</div>
-                <div class="auth-preview-phone-stories">
-                  <div class="auth-preview-phone-story auth-preview-phone-story-create">
-                    <span class="auth-preview-phone-story-avatar"><i data-lucide="plus"></i></span>
-                    <span>Utworz</span>
-                  </div>
-                  <div class="auth-preview-phone-story">
-                    <span class="auth-preview-phone-story-avatar accent">EW</span>
-                    <span>Ewelina</span>
-                    <span class="auth-preview-phone-status"></span>
-                  </div>
-                  <div class="auth-preview-phone-story">
-                    <span class="auth-preview-phone-story-avatar">MA</span>
-                    <span>Marcin</span>
-                    <span class="auth-preview-phone-status"></span>
-                  </div>
-                  <div class="auth-preview-phone-story">
-                    <span class="auth-preview-phone-story-avatar accent">JU</span>
-                    <span>Justyna</span>
-                    <span class="auth-preview-phone-status"></span>
-                  </div>
-                </div>
-                <div class="auth-preview-phone-list">
-                  <div class="auth-preview-phone-row">
-                    <span class="preview-avatar">DS</span>
-                    <div>
-                      <strong>Dominik Solorz</strong>
-                      <span>Cofnieto wysylanie wiadomosci</span>
-                    </div>
-                    <small>19 cze</small>
-                  </div>
-                  <div class="auth-preview-phone-row active">
-                    <span class="preview-avatar accent">EL</span>
-                    <div>
-                      <strong>Moja zonka</strong>
-                      <span>❤️</span>
-                    </div>
-                    <small>22:27</small>
-                  </div>
-                  <div class="auth-preview-phone-row">
-                    <span class="preview-avatar">KA</span>
-                    <div>
-                      <strong>Katowice - mieszkancy</strong>
-                      <span>Nowa wiadomosc w grupie</span>
-                    </div>
-                    <small>sro.</small>
-                  </div>
-                </div>
-                <div class="auth-preview-phone-pill">
-                  <span class="auth-preview-phone-orb"></span>
-                  <span>Zapytaj LinkTalk AI</span>
-                </div>
-                <div class="auth-preview-phone-nav">
-                  <span class="active"><i data-lucide="message-circle"></i><small>Czaty</small></span>
-                  <span><i data-lucide="layout-grid"></i><small>Relacje</small></span>
-                  <span><i data-lucide="bell"></i><small>Powiad.</small></span>
-                  <span><i data-lucide="menu"></i><small>Menu</small></span>
                 </div>
               </div>
             </div>
@@ -275,8 +311,11 @@
             </div>
           </div>
 
-          <div class="auth-panel">
-            <h2>Logowanie i rejestracja</h2>
+          <div class="auth-panel auth-panel-sheet">
+            <div class="auth-panel-head">
+              <h2>Logowanie i rejestracja</h2>
+              <span class="auth-panel-security"><i data-lucide="shield-check"></i>Bezpieczne konto</span>
+            </div>
             <p class="auth-panel-copy">
               Nowe konto moze potwierdzic adres email kliknieciem w link albo kodem z maila. Numer telefonu potwierdzisz SMS-em po pierwszym zalogowaniu.
             </p>
@@ -343,7 +382,7 @@
               <button class="inline-link-button" id="showPrivacyAuthButton" type="button">Polityka prywatnosci</button>
             </div>
             <div class="auth-support-row">
-              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-03</span>
+              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-04</span>
               <button class="inline-link-button subtle" id="refreshAppButton" type="button">Wymus odswiezenie</button>
             </div>
             <div class="setup-warning hidden" id="setupWarning">
@@ -447,8 +486,8 @@
     </dialog>
 
     <script>
-      window.LINKTALK_BUILD = "2026.07.10-03";
+      window.LINKTALK_BUILD = "2026.07.10-04";
     </script>
-    <script type="module" src="app.js?v=20260710-03"></script>
+    <script type="module" src="app.js?v=20260710-04"></script>
   </body>
 </html>
