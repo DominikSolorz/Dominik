@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0d10" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="linktalk-build" content="2026.07.10-08" />
+    <meta name="linktalk-build" content="2026.07.10-09" />
     <title>LinkTalk</title>
-    <link rel="manifest" href="manifest.webmanifest?v=20260710-08" />
-    <link rel="stylesheet" href="styles.css?v=20260710-08" />
+    <link rel="manifest" href="manifest.webmanifest?v=20260710-09" />
+    <link rel="stylesheet" href="styles.css?v=20260710-09" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <script src="config.js?v=20260710-08"></script>
+    <script src="config.js?v=20260710-09"></script>
   </head>
   <body>
     <div class="app-shell" id="app">
@@ -310,6 +310,69 @@
                 <span>Ostatnie rozmowy i teksty zostaja zapisane lokalnie po pierwszej synchronizacji.</span>
               </div>
             </div>
+
+            <div class="auth-runtime-shell">
+              <div class="auth-reality-card">
+                <span class="auth-side-label">Jak to dziala naprawde</span>
+                <h2 class="auth-reality-title">To nie jest sama makieta. Tutaj widzisz, co utrzymuje strone, dane i aplikacje.</h2>
+                <div class="runtime-status-grid">
+                  <div class="runtime-status-card">
+                    <span class="runtime-status-label">WWW</span>
+                    <strong id="runtimeSiteValue">Sprawdzam publikacje...</strong>
+                    <p id="runtimeSiteNote">Laduje informacje o publicznym buildzie strony.</p>
+                  </div>
+                  <div class="runtime-status-card">
+                    <span class="runtime-status-label">Dane i logowanie</span>
+                    <strong id="runtimeDataValue">Sprawdzam backend...</strong>
+                    <p id="runtimeDataNote">Laduje stan logowania i bazy.</p>
+                  </div>
+                  <div class="runtime-status-card">
+                    <span class="runtime-status-label">APK Android</span>
+                    <strong id="runtimeApkValue">Sprawdzam paczke...</strong>
+                    <p id="runtimeApkNote">Laduje informacje o pliku APK.</p>
+                  </div>
+                  <div class="runtime-status-card">
+                    <span class="runtime-status-label">Offline</span>
+                    <strong id="runtimeOfflineValue">Sprawdzam zapis lokalny...</strong>
+                    <p id="runtimeOfflineNote">Laduje stan cache i pracy bez internetu.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="auth-reality-card auth-audio-card">
+                <span class="auth-side-label">Czytaj lub sluchaj</span>
+                <h3>Strona, regulamin i polityka prywatnosci maja dzialac takze dla osob, ktore wola odsluch.</h3>
+                <p class="auth-audio-copy">Nie chowamy dokumentow w koncie. Mozesz je otworzyc, przeczytac albo od razu zamienic tekst na audio.</p>
+                <div class="auth-audio-actions">
+                  <button class="secondary-button" id="listenLandingButton" type="button">Posluchaj tej strony</button>
+                  <button class="ghost-button" id="listenTermsButton" type="button">Regulamin audio</button>
+                  <button class="ghost-button" id="listenPrivacyButton" type="button">Prywatnosc audio</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-flow-grid" aria-label="Jak zaczyna uzytkownik">
+              <div class="auth-flow-card">
+                <span class="auth-flow-number">01</span>
+                <strong>Najpierw widzi produkt</strong>
+                <p>Strona glowna ma pokazac rytm rozmow, a nie tylko zimny formularz.</p>
+              </div>
+              <div class="auth-flow-card">
+                <span class="auth-flow-number">02</span>
+                <strong>Zaklada konto lub loguje sie</strong>
+                <p>Haslo, link z maila albo 6-cyfrowy kod prowadza do tego samego konta.</p>
+              </div>
+              <div class="auth-flow-card">
+                <span class="auth-flow-number">03</span>
+                <strong>Wraca na laptop i telefon</strong>
+                <p>To samo konto ma te same rozmowy, powiadomienia i ustawienia na obu ekranach.</p>
+              </div>
+              <div class="auth-flow-card">
+                <span class="auth-flow-number">04</span>
+                <strong>Dopina bezpieczenstwo</strong>
+                <p>Po pierwszym wejsciu mozna domknac numer telefonu kodem SMS i ustawienia prywatnosci.</p>
+              </div>
+            </div>
           </div>
 
           <aside class="auth-side-stack" aria-label="Najwazniejsze cechy">
@@ -431,7 +494,7 @@
               <button class="inline-link-button" id="showPrivacyAuthButton" type="button">Polityka prywatnosci</button>
             </div>
             <div class="auth-support-row">
-              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-08</span>
+              <span class="build-badge" id="buildBadge">Wydanie 2026.07.10-09</span>
               <button class="inline-link-button subtle" id="refreshAppButton" type="button">Wymus odswiezenie</button>
             </div>
             <div class="setup-warning hidden" id="setupWarning">
@@ -540,8 +603,8 @@
     </dialog>
 
     <script>
-      window.LINKTALK_BUILD = "2026.07.10-08";
+      window.LINKTALK_BUILD = "2026.07.10-09";
     </script>
-    <script type="module" src="app.js?v=20260710-08"></script>
+    <script type="module" src="app.js?v=20260710-09"></script>
   </body>
 </html>
