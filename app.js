@@ -15,7 +15,7 @@ const MAX_CACHED_MESSAGES_PER_CONVERSATION = 80;
 const MIN_APK_DOWNLOAD_BYTES = 8 * 1024;
 const LEGAL_VERSION = "2026-07-09";
 const BRAND_NAME = "LinkTalk";
-const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-06");
+const BUILD_VERSION = String(window.LINKTALK_BUILD || "2026.07.10-07");
 const ADMIN_CONTACT = {
   controller: "Dominik Solorz",
   address: "ul. Piastowska 2/1, 40-005 Katowice",
@@ -2725,18 +2725,22 @@ function openSettings() {
   document.getElementById("settingsTitle").textContent = "Ustawienia";
   settingsLayout.innerHTML = `
     <div class="settings-menu">
+      <div class="settings-menu-section">Profil</div>
       <button class="list-button" id="editDisplayName"><i data-lucide="user-round"></i>Nazwa profilu</button>
       <button class="list-button" id="editUsername"><i data-lucide="at-sign"></i>Username</button>
       <button class="list-button" id="editStatus"><i data-lucide="message-square-text"></i>Status</button>
       <button class="list-button" id="showVerificationCenter"><i data-lucide="badge-check"></i>Weryfikacja konta</button>
       <button class="list-button" id="showPrivateData"><i data-lucide="id-card"></i>Dane osobowe</button>
+      <div class="settings-menu-section">Prywatnosc</div>
       <button class="list-button" id="toggleReadReceipts"><i data-lucide="check-check"></i>Potwierdzenia odczytu: ${state.profile?.read_receipts_enabled ? "wlaczone" : "wylaczone"}</button>
       <button class="list-button" id="toggleAutoTranscript"><i data-lucide="captions"></i>Auto-transkrypcja: ${state.profile?.auto_transcribe_voice ? "wlaczona" : "wylaczona"}</button>
+      <div class="settings-menu-section">Dokumenty</div>
       <button class="list-button" id="showTerms"><i data-lucide="file-text"></i>Regulamin</button>
       <button class="list-button" id="showPrivacy"><i data-lucide="shield-check"></i>Polityka prywatnosci</button>
+      <div class="settings-menu-section">Aplikacja</div>
       <button class="list-button" id="showPwaInstall"><i data-lucide="smartphone"></i>Instalacja Android/iPhone</button>
       <button class="list-button" id="refreshApplication"><i data-lucide="refresh-cw"></i>Odswiez aplikacje</button>
-      <button class="list-button" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
+      <button class="list-button danger" id="logoutButton"><i data-lucide="log-out"></i>Wyloguj</button>
     </div>
     <div class="settings-content">
       <h3>${escapeHtml(state.profile?.display_name || "Profil")}</h3>

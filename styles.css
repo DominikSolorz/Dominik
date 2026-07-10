@@ -1427,28 +1427,35 @@ h3 {
 
 .auth-preview-thread-list {
   display: grid;
-  gap: 4px;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .preview-thread {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
-  border-radius: 14px;
-  padding: 9px 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid transparent;
+  border-radius: 0;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.preview-thread:last-child {
+  border-bottom: 0;
 }
 
 .preview-thread.active {
-  background: rgba(8, 102, 255, 0.12);
-  border-color: rgba(43, 115, 255, 0.2);
+  background: rgba(8, 102, 255, 0.1);
 }
 
 .preview-avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -2290,7 +2297,7 @@ body.app-active .reaction-pill {
 @media (max-width: 760px) {
   .app-shell {
     grid-template-columns: 1fr;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 56px);
   }
 
   .rail,
@@ -2479,7 +2486,7 @@ body.app-active .reaction-pill {
     left: 0;
     right: 0;
     bottom: 0;
-    height: 72px;
+    height: 56px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     background: var(--panel);
@@ -2488,14 +2495,14 @@ body.app-active .reaction-pill {
   }
 
   .mobile-tab {
-    height: 72px;
+    height: 56px;
     display: grid;
     place-items: center;
-    gap: 4px;
+    gap: 3px;
     border-radius: 0;
     background: transparent;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
   }
 
@@ -2511,16 +2518,16 @@ body.app-active .reaction-pill {
   .mobile-ai-pill {
     position: fixed;
     right: 14px;
-    bottom: 86px;
-    min-height: 52px;
+    bottom: 70px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     border: 0;
     border-radius: 999px;
     background: #242526;
     color: #ffffff;
-    padding: 0 18px 0 14px;
+    padding: 0 16px 0 12px;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
     z-index: 19;
   }
@@ -3053,7 +3060,7 @@ body.app-active .mobile-ai-pill span:last-child {
 
 @media (max-width: 760px) {
   body.app-active .app-shell {
-    height: calc(100vh - 76px - env(safe-area-inset-bottom));
+    height: calc(100vh - 60px - env(safe-area-inset-bottom));
     background: #0b0d10;
   }
 
@@ -3070,13 +3077,13 @@ body.app-active .mobile-ai-pill span:last-child {
   }
 
   body.app-active .search-box {
-    min-height: 52px;
+    min-height: 44px;
     margin: 0 2px 12px;
     padding: 0 16px;
   }
 
   body.app-active .search-box input {
-    height: 50px;
+    height: 44px;
   }
 
   body.app-active .story-strip {
@@ -3085,37 +3092,40 @@ body.app-active .mobile-ai-pill span:last-child {
   }
 
   body.app-active .story-avatar {
-    width: 64px;
-    height: 64px;
-    border: 2px solid rgba(10, 132, 255, 0.46);
+    width: 60px;
+    height: 60px;
+    border: 2.5px solid rgba(10, 132, 255, 0.5);
     background: #171b21;
+    box-shadow: 0 0 0 1px rgba(10, 132, 255, 0.15);
   }
 
   body.app-active .story-avatar.story-avatar-create {
     background: #1b1e23;
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
   }
 
   body.app-active .conversation-list {
-    gap: 6px;
-    padding: 4px 0 calc(136px + env(safe-area-inset-bottom));
+    gap: 2px;
+    padding: 4px 0 calc(100px + env(safe-area-inset-bottom));
   }
 
   body.app-active .conversation-card {
-    min-height: 76px;
-    margin: 0 2px;
-    padding: 10px 12px;
-    border-radius: 20px;
-    grid-template-columns: 58px minmax(0, 1fr) auto;
+    min-height: 64px;
+    margin: 0 4px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
   }
 
   body.app-active .conversation-card .avatar {
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
   }
 
   body.app-active .chat-header {
-    min-height: 68px;
-    padding: 10px 8px 10px 6px;
+    min-height: 56px;
+    padding: 8px 8px 8px 6px;
   }
 
   body.app-active .mobile-back {
@@ -3169,7 +3179,7 @@ body.app-active .mobile-ai-pill span:last-child {
   }
 
   body.app-active .mobile-nav {
-    height: calc(76px + env(safe-area-inset-bottom));
+    height: calc(60px + env(safe-area-inset-bottom));
     padding-bottom: env(safe-area-inset-bottom);
     border-top-color: rgba(255, 255, 255, 0.06);
     background: rgba(17, 18, 22, 0.96);
@@ -3178,9 +3188,10 @@ body.app-active .mobile-ai-pill span:last-child {
 
   body.app-active .mobile-tab {
     position: relative;
-    height: 76px;
-    gap: 5px;
+    height: 60px;
+    gap: 4px;
     color: #8b95a1;
+    font-size: 11px;
   }
 
   body.app-active .mobile-tab.active {
@@ -3190,10 +3201,10 @@ body.app-active .mobile-ai-pill span:last-child {
   body.app-active .mobile-tab.active::before {
     content: "";
     position: absolute;
-    top: 8px;
+    top: 6px;
     left: 50%;
-    width: 34px;
-    height: 4px;
+    width: 32px;
+    height: 3px;
     border-radius: 999px;
     transform: translateX(-50%);
     background: #0a84ff;
@@ -3201,8 +3212,8 @@ body.app-active .mobile-ai-pill span:last-child {
 
   body.app-active .mobile-ai-pill {
     right: 12px;
-    bottom: calc(90px + env(safe-area-inset-bottom));
-    min-height: 48px;
+    bottom: calc(74px + env(safe-area-inset-bottom));
+    min-height: 44px;
     padding: 0 14px 0 12px;
     gap: 10px;
   }
@@ -3739,4 +3750,120 @@ body.app-active .details-quick-action {
   .contact-person-actions {
     justify-content: flex-start;
   }
+}
+
+/* ============================================================
+   Messenger-like UI enhancements
+   ============================================================ */
+
+/* AI pill: blue gradient (Meta AI inspired) */
+body.app-active .mobile-ai-pill {
+  background: linear-gradient(135deg, rgba(10, 100, 255, 0.88), rgba(43, 148, 255, 0.82));
+  border: 1px solid rgba(67, 160, 255, 0.28);
+  color: #ffffff;
+  box-shadow: 0 10px 28px rgba(10, 100, 255, 0.24);
+}
+
+/* Chevron indicator and Messenger-like rows for settings and details list buttons */
+body.app-active .settings-menu .list-button,
+body.app-active .action-list .list-button {
+  min-height: 44px;
+  padding: 10px 12px 10px 8px;
+  border-radius: 10px;
+}
+
+body.app-active .settings-menu .list-button::after,
+body.app-active .action-list .list-button:not(.danger)::after {
+  content: '';
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(139, 149, 161, 0.5);
+  border-top: 1.5px solid rgba(139, 149, 161, 0.5);
+  transform: rotate(45deg);
+  margin-left: auto;
+  flex-shrink: 0;
+  border-radius: 1px;
+}
+
+/* Settings menu section group label */
+.settings-menu-section {
+  padding: 12px 8px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #8b95a1;
+}
+
+/* Details panel: tighter section labels */
+body.app-active .details-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #8b95a1;
+  margin-bottom: 8px;
+}
+
+body.app-active .details-card {
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+}
+
+/* Settings menu group: remove gap between buttons, use section labels as dividers */
+body.app-active .settings-menu {
+  gap: 0;
+}
+
+/* Desktop: inbox thread density improvement */
+body.app-active .conversation-card {
+  min-height: 68px;
+  padding: 8px 12px;
+}
+
+/* Conversation unread state: bolder name, more prominent */
+body.app-active .conversation-card.unread .conversation-title strong {
+  font-weight: 800;
+}
+
+body.app-active .conversation-card.unread .preview {
+  font-weight: 600;
+  color: #c5cdd7;
+}
+
+/* Search bar: compact 44px on desktop */
+body.app-active .search-box {
+  min-height: 44px;
+}
+
+/* Chat header: compact 56px on desktop */
+body.app-active .chat-header {
+  min-height: 56px;
+}
+
+/* Message timestamp: slightly more visible */
+body.app-active .message-meta {
+  margin-top: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+  color: #6e7a88;
+}
+
+/* Auth preview phone pill: stronger blue gradient */
+.auth-preview-phone-pill {
+  background: linear-gradient(135deg, rgba(10, 100, 255, 0.85), rgba(43, 148, 255, 0.75));
+  border: 1px solid rgba(67, 160, 255, 0.3);
+}
+
+/* Mobile AI pill text label */
+.mobile-ai-pill span:last-child {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Inbox: sticky header has stronger blur for Messenger feel */
+body.app-active .inbox-header {
+  backdrop-filter: blur(24px);
 }
