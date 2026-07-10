@@ -3789,7 +3789,7 @@ body.app-active .action-list .list-button:not(.danger)::after {
 /* Settings menu section group label */
 .settings-menu-section {
   padding: 12px 8px 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.6px;
@@ -3798,7 +3798,7 @@ body.app-active .action-list .list-button:not(.danger)::after {
 
 /* Details panel: tighter section labels */
 body.app-active .details-section-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -3812,7 +3812,8 @@ body.app-active .details-card {
   border-radius: 14px;
 }
 
-/* Settings menu group: remove gap between buttons, use section labels as dividers */
+/* Settings menu group: remove gap between buttons in app-active dark mode.
+   Base .settings-menu has gap:7px; section labels serve as visual dividers instead. */
 body.app-active .settings-menu {
   gap: 0;
 }
