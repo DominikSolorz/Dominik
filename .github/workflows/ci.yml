@@ -1,0 +1,25 @@
+name: DS Stream Support CI
+
+on:
+  push:
+    branches: [main, ds-stream-support]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://nzfyhteodpyewpatfmgd.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_pQyqrQFFZBwjHGDK_RbTsA_R93HWA1_
+        run: npm run build
