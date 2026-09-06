@@ -1,0 +1,23 @@
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+const corsHeaders={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type"};
+Deno.serve(async(req:Request)=>{
+ if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
+ if(req.method!=="POST")return Response.json({error:"Method not allowed"},{status:405,headers:corsHeaders});
+ const admin=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false}});
+ const token=(req.headers.get("Authorization")||"").replace(/^Bearer\s+/i,"");
+ const {data:userData,error:userError}=await admin.auth.getUser(token);
+ if(userError||!userData.user)return Response.json({error:"Unauthorized"},{status:401,headers:corsHeaders});
+ const {data:owned}=await admin.from("stream_profiles").select("id").eq("user_id",userData.user.id);
+ const {data:moderating}=await admin.from("stream_moderators").select("profile_id,can_moderate_messages,can_moderate_voice").eq("moderator_user_id",userData.user.id);
+ const profileIds=[...(owned||[]).map((x:any)=>x.id),...(moderating||[]).filter((x:any)=>x.can_moderate_messages||x.can_moderate_voice).map((x:any)=>x.profile_id)];
+ const unique=[...new Set(profileIds)];
+ if(!unique.length)return Response.json({items:[]},{headers:corsHeaders});
+ const body=await req.json().catch(()=>({}));
+ const status=String(body.status||"pending");
+ let query=admin.from("stream_donations").select("id,creator_profile_id,payer_name,is_anonymous,amount_grosz,currency,message,voice_url,status,moderation_status,created_at").in("creator_profile_id",unique).order("created_at",{ascending:false}).limit(100);
+ if(["pending","approved","rejected"].includes(status))query=query.eq("moderation_status",status);
+ const {data,error}=await query;
+ if(error)return Response.json({error:error.message},{status:500,headers:corsHeaders});
+ return Response.json({items:(data||[]).map((x:any)=>({...x,payer_name:x.is_anonymous?"Anonim":x.payer_name}))},{headers:corsHeaders});
+});
