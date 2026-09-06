@@ -1,0 +1,3 @@
+import { BellRing, Bot, Cable, Goal, Mic2, ShieldCheck, UserRoundCog, WalletCards } from "lucide-react";
+const features = [["Własna strona wpłat","Twój link i personalizacja",WalletCards],["Alerty na żywo","OBS i przeglądarka",BellRing],["Wiadomości głosowe","Nagrania od widzów",Mic2],["AI Moderator","Filtrowanie treści",Bot],["Cele i rankingi","Postęp i top wspierający",Goal],["Integracje","Twitch, YouTube, TikTok",Cable],["Panel twórcy","Statystyki i ustawienia",UserRoundCog],["Bezpieczeństwo","RLS i kontrola dostępu",ShieldCheck]] as const;
+export function FeatureStrip(){return <section className="featureStrip" id="funkcje">{features.map(([t,d,I])=><article key={t}><I size={21}/><div><strong>{t}</strong><span>{d}</span></div></article>)}</section>}
